@@ -1,0 +1,16 @@
+The bundled file `heiglogo.sty` is governed by the LaTeX Project Public
+License (LPPL) version 1.3c, available at:
+
+    https://www.latex-project.org/lppl/lppl-1-3c/
+
+Upstream sources (the ``.dtx`` master and the canonical brand assets):
+
+    https://github.com/HEIG-VD/logos
+
+This package redistributes the docstrip-generated ``heiglogo.sty`` file
+unchanged. To regenerate it from the upstream ``.dtx``:
+
+    git clone https://github.com/HEIG-VD/logos
+    cd logos/heig-vd/latex
+    latex heiglogo.dtx
+    cp heiglogo.sty <target>/src/texsmith_fragment_heig_logo/fragment/heiglogo.sty

@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "texsmith-fragment-heig-logo"
+dynamic = ["version"]
+description = "TeXSmith fragment that drops the HEIG-VD logo on the first page of a document."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Yves Chevallier", email = "yves.chevalier@heig-vd.ch" }
+]
+keywords = ["texsmith", "fragment", "heig-vd", "latex"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Text Processing :: Markup :: LaTeX",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "texsmith>=0.2.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/HEIG-VD/texsmith-fragment-heig-logo"
+Issues = "https://github.com/HEIG-VD/texsmith-fragment-heig-logo/issues"
+"Upstream logo (LaTeX sources)" = "https://github.com/HEIG-VD/logos"
+
+[project.entry-points."texsmith.fragments"]
+ts-heiglogo = "texsmith_fragment_heig_logo:FRAGMENT_PATH"
+
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "0.0.0"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/texsmith_fragment_heig_logo"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/texsmith_fragment_heig_logo/fragment/heiglogo.sty" = "texsmith_fragment_heig_logo/fragment/heiglogo.sty"
+"src/texsmith_fragment_heig_logo/fragment/fragment.toml" = "texsmith_fragment_heig_logo/fragment/fragment.toml"
+"src/texsmith_fragment_heig_logo/fragment/ts-heiglogo.jinja.tex" = "texsmith_fragment_heig_logo/fragment/ts-heiglogo.jinja.tex"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/",
+    "README.md",
+    "LICENSE",
+    "LICENSE-LPPL",
+]

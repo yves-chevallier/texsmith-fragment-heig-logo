@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  smoke:
+    name: Build & smoke-test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.13", "3.14"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.9.18"
+          enable-cache: true
+          cache-python: false
+        env:
+          UV_CACHE_SAVE: "false"
+
+      - name: Build wheel and sdist
+        run: uv build
+
+      - name: Install built wheel into a fresh env
+        run: |
+          set -euo pipefail
+          uv venv .venv-smoke
+          uv pip install --python .venv-smoke/bin/python dist/*.whl
+
+      - name: Verify entry point resolves to a fragment directory
+        run: |
+          set -euo pipefail
+          .venv-smoke/bin/python - <<'PY'
+          from importlib.metadata import entry_points
+          eps = list(entry_points(group="texsmith.fragments"))
+          assert len(eps) == 1, f"expected one entry point, got {eps}"
+          ep = eps[0]
+          assert ep.name == "ts-heiglogo", ep.name
+          path = ep.load()
+          assert path.is_dir(), path
+          assert (path / "fragment.toml").is_file(), "fragment.toml missing"
+          assert (path / "heiglogo.sty").is_file(), "heiglogo.sty missing"
+          assert (path / "ts-heiglogo.jinja.tex").is_file(), "ts-heiglogo.jinja.tex missing"
+          print("OK", path)
+          PY
+
+      - name: Upload distributions
+        if: matrix.python-version == '3.13'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*
+          if-no-files-found: error
+
+  release:
+    name: Publish to PyPI & GitHub Release
+    needs: [smoke]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      id-token: write
+
+    environment:
+      name: pypi
+      url: https://pypi.org/project/texsmith-fragment-heig-logo/
+
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
