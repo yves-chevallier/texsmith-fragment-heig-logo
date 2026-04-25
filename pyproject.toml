@@ -34,7 +34,7 @@ Issues = "https://github.com/HEIG-VD/texsmith-fragment-heig-logo/issues"
 "Upstream logo (LaTeX sources)" = "https://github.com/HEIG-VD/logos"
 
 [project.entry-points."texsmith.fragments"]
-ts-heiglogo = "texsmith_fragment_heig_logo:FRAGMENT_PATH"
+heiglogo = "texsmith_fragment_heig_logo:FRAGMENT_PATH"
 
 [tool.hatch.version]
 source = "vcs"
@@ -46,7 +46,7 @@ packages = ["src/texsmith_fragment_heig_logo"]
 [tool.hatch.build.targets.wheel.force-include]
 "src/texsmith_fragment_heig_logo/fragment/heiglogo.sty" = "texsmith_fragment_heig_logo/fragment/heiglogo.sty"
 "src/texsmith_fragment_heig_logo/fragment/fragment.toml" = "texsmith_fragment_heig_logo/fragment/fragment.toml"
-"src/texsmith_fragment_heig_logo/fragment/ts-heiglogo.jinja.tex" = "texsmith_fragment_heig_logo/fragment/ts-heiglogo.jinja.tex"
+"src/texsmith_fragment_heig_logo/fragment/heiglogo.jinja.tex" = "texsmith_fragment_heig_logo/fragment/heiglogo.jinja.tex"
 
 [tool.hatch.build.targets.sdist]
 include = [

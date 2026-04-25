@@ -1,4 +1,4 @@
-name = "ts-heiglogo"
+name = "heiglogo"
 description = "Logo HEIG-VD sur la première page, en haut à gauche, à 1cm des bords."
 
 [[files]]
@@ -7,7 +7,7 @@ type = "package"
 output = "heiglogo"
 
 [[files]]
-path = "ts-heiglogo.jinja.tex"
+path = "heiglogo.jinja.tex"
 type = "inline"
 slot = "extra_packages"
 

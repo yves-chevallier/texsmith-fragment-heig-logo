@@ -55,12 +55,12 @@ jobs:
           eps = list(entry_points(group="texsmith.fragments"))
           assert len(eps) == 1, f"expected one entry point, got {eps}"
           ep = eps[0]
-          assert ep.name == "ts-heiglogo", ep.name
+          assert ep.name == "heiglogo", ep.name
           path = ep.load()
           assert path.is_dir(), path
           assert (path / "fragment.toml").is_file(), "fragment.toml missing"
           assert (path / "heiglogo.sty").is_file(), "heiglogo.sty missing"
-          assert (path / "ts-heiglogo.jinja.tex").is_file(), "ts-heiglogo.jinja.tex missing"
+          assert (path / "heiglogo.jinja.tex").is_file(), "heiglogo.jinja.tex missing"
           print("OK", path)
           PY
 

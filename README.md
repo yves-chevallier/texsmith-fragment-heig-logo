@@ -11,7 +11,7 @@ uv add texsmith-fragment-heig-logo
 pip install texsmith-fragment-heig-logo
 ```
 
-The package registers a `ts-heiglogo` fragment via the
+The package registers a `heiglogo` fragment via the
 `texsmith.fragments` entry-point group, so TeXSmith picks it up
 automatically — no path configuration needed.
 
@@ -23,7 +23,7 @@ fragment to the rendering pipeline:
 ```yaml
 fragments:
   append:
-    - ts-heiglogo
+    - heiglogo
 heiglogo:
   color: false   # set to true for the red HEIG-VD logo
 ```
@@ -53,7 +53,7 @@ The package ships three files under
 - `fragment.toml` — declares the fragment to TeXSmith and exposes the
   `heiglogo_color` attribute.
 - `heiglogo.sty` — the docstrip-generated LaTeX package.
-- `ts-heiglogo.jinja.tex` — a one-line Jinja template that calls
+- `heiglogo.jinja.tex` — a one-line Jinja template that calls
   `\AddToShipoutPictureBG*{\logo[...]}`.
 
 The package's `__init__.py` exports a `FRAGMENT_PATH` constant. The
@@ -61,7 +61,7 @@ The package's `__init__.py` exports a `FRAGMENT_PATH` constant. The
 
 ```toml
 [project.entry-points."texsmith.fragments"]
-ts-heiglogo = "texsmith_fragment_heig_logo:FRAGMENT_PATH"
+heiglogo = "texsmith_fragment_heig_logo:FRAGMENT_PATH"
 ```
 
 When TeXSmith starts, its `FragmentRegistry._discover_entry_points()`
