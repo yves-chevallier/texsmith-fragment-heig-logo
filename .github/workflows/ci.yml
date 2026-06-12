@@ -50,21 +50,29 @@ jobs:
           uv venv .venv-smoke
           uv pip install --python .venv-smoke/bin/python dist/*.whl
 
-      - name: Verify entry point resolves to a fragment directory
+      - name: Verify entry point factory and bundled fragment data
         run: |
           set -euo pipefail
           .venv-smoke/bin/python - <<'PY'
           from importlib.metadata import entry_points
+
           eps = list(entry_points(group="texsmith.fragments"))
           assert len(eps) == 1, f"expected one entry point, got {eps}"
           ep = eps[0]
           assert ep.name == "heiglogo", ep.name
-          path = ep.load()
-          assert path.is_dir(), path
-          assert (path / "fragment.toml").is_file(), "fragment.toml missing"
-          assert (path / "heiglogo.sty").is_file(), "heiglogo.sty missing"
-          assert (path / "heiglogo.jinja.tex").is_file(), "heiglogo.jinja.tex missing"
-          print("OK", path)
+
+          # The entry point is the lazy factory load_fragment, not a path.
+          factory = ep.load()
+          assert callable(factory), f"entry point should be callable, got {factory!r}"
+          assert factory.__name__ == "load_fragment", factory.__name__
+
+          # The wheel must ship the fragment data files (force-included).
+          from texsmith_fragment_heig_logo import FRAGMENT_PATH
+
+          assert FRAGMENT_PATH.is_dir(), FRAGMENT_PATH
+          for name in ("fragment.toml", "heiglogo.sty", "heiglogo.jinja.tex"):
+              assert (FRAGMENT_PATH / name).is_file(), f"{name} missing"
+          print("OK", FRAGMENT_PATH)
           PY
 
       - name: Upload distributions
