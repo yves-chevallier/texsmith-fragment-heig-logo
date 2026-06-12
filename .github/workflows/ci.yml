@@ -38,6 +38,9 @@ jobs:
         env:
           UV_CACHE_SAVE: "false"
 
+      - name: Run unit & integration tests
+        run: uv run --group dev pytest -v
+
       - name: Build wheel and sdist
         run: uv build
 
