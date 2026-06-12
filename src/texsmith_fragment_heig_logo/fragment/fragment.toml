@@ -1,3 +1,11 @@
+# Declarative description of the heiglogo fragment.
+#
+# The fragment is registered through the ``texsmith.fragments`` entry point as
+# the Python object ``texsmith_fragment_heig_logo:fragment`` (see __init__.py),
+# which is what enables the automatic, date-driven vintage selection. This
+# manifest is kept in sync for documentation and as a static fallback; pointing
+# TeXSmith at this directory by path still works, but then ``heiglogo.year``
+# must be set explicitly because the auto-from-date logic lives in Python.
 name = "heiglogo"
 description = "Logo HEIG-VD sur la première page, en haut à gauche, à 1cm des bords."
 
@@ -16,3 +24,8 @@ default = false
 type = "boolean"
 sources = ["heiglogo.color", "heiglogo_color"]
 description = "Afficher le logo en couleur (rouge HEIG-VD)."
+
+[attributes.heiglogo_year]
+default = "auto"
+sources = ["heiglogo.year", "heiglogo_year"]
+description = "Millésime du logo : auto (depuis la date du document), 1998, 2004, 2009, 2020."

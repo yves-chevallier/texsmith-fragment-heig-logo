@@ -25,7 +25,15 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
 dependencies = [
-    "texsmith>=0.2.1",
+    # Object-oriented fragments (BaseFragment) and entry points returning a
+    # fragment object — required for the date-driven vintage selection.
+    "texsmith>=0.3.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "jinja2>=3.0",
 ]
 
 [project.urls]
@@ -34,7 +42,10 @@ Issues = "https://github.com/HEIG-VD/texsmith-fragment-heig-logo/issues"
 "Upstream logo (LaTeX sources)" = "https://github.com/HEIG-VD/logos"
 
 [project.entry-points."texsmith.fragments"]
-heiglogo = "texsmith_fragment_heig_logo:FRAGMENT_PATH"
+# Register a Python factory (not just the path) so the fragment can derive the
+# logo vintage from the document date. The factory is lazy to avoid a circular
+# import while TeXSmith builds its registry.
+heiglogo = "texsmith_fragment_heig_logo:load_fragment"
 
 [tool.hatch.version]
 source = "vcs"
@@ -51,7 +62,12 @@ packages = ["src/texsmith_fragment_heig_logo"]
 [tool.hatch.build.targets.sdist]
 include = [
     "src/",
+    "tests/",
+    "demo/",
     "README.md",
     "LICENSE",
     "LICENSE-LPPL",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

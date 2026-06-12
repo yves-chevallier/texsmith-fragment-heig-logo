@@ -8,7 +8,13 @@
 %%   This is the generated file for the heiglogo package.
 %%   License: LPPL 1.3c or later.
 \NeedsTeXFormat{LaTeX2e}[2022-06-01]
-\ProvidesPackage{heiglogo}[2025/09/30 v1.0 HEIG-VD Logo with options]
+%% --- texsmith-fragment-heig-logo: self-contained version stamp ---
+%% Upstream defines \HeigGitDate/\HeigGitTag in version.tex (CI-generated)
+%% and only provides fallbacks in the documentation driver. The bundled
+%% package must stand alone, so we supply the values of the vendored commit.
+\providecommand\HeigGitDate{2026/06/04}
+\providecommand\HeigGitTag{34e9c6e}
+\ProvidesPackage{heiglogo}[\HeigGitDate\space v\HeigGitTag\space HEIG-VD Logo with options]
 \RequirePackage{iftex}
 \ifPDFTeX
   \PackageError{heiglogo}{
@@ -20,13 +26,26 @@
 \RequirePackage{tikz}
 \RequirePackage{fontspec}
 
-\newfontfamily\heiglogoFont{TeX Gyre Heros}[
-    BoldFont = * Bold,
-    UprightFont = * ,
-    NFSSFamily = heiglogo,
-]
+\newif\ifheiglogo@fontloaded
+\heiglogo@fontloadedfalse
+
+\newcommand\heiglogo@ensurefont{%
+  \ifheiglogo@fontloaded\else
+    \newfontfamily\heiglogoFont{TeX Gyre Heros}[
+      BoldFont = * Bold,
+      UprightFont = * ,
+      NFSSFamily = heiglogo,
+    ]%
+    \heiglogo@fontloadedtrue
+  \fi
+}
 
 \definecolor{heiglogo@red}{HTML}{e1251b}
+\definecolor{heiglogo@red2004}{HTML}{ee3124}
+\definecolor{heiglogo@red2009}{HTML}{a63136}
+\definecolor{heiglogo@red1998}{HTML}{ed1c29}
+\definecolor{heiglogo@green1998}{HTML}{00a651}
+\definecolor{heiglogo@black1998}{HTML}{231f20}
 
 \newcommand\heiglogo@curcolor{black}
 \newcommand\heiglogo@height{1.8cm}
@@ -34,66 +53,191 @@
 \newcommand\heiglogo@right{-1pt} % undefined
 \newcommand\heiglogo@top{10mm}
 \newcommand\heiglogo@textwidth{3cm}
+\newcommand\heiglogo@year{2020}
+\newcommand\heiglogo@scaleref{52.5pt}
+\newcommand\heiglogo@nativeheight{75}
+\newcommand\heiglogo@nativewidth{100}
+\newcommand\heiglogo@bbright{100}
+\newcommand\heiglogo@textanchorx{125}
+\newcommand\heiglogo@separatorx{114}
+\newcommand\heiglogo@defsizemode{height}
+\newcommand\heiglogo@defsize{18mm}
+\newif\ifheiglogo@iscolor
 \newif\ifheiglogo@hastexttitle
 \newif\ifheiglogo@hastextsubtitle
 \newcommand\heiglogo@txt{}
 \newcommand\heiglogo@subtitle{}
 
+\expandafter\def\csname heiglogo@setyear@1998\endcsname{%
+    \def\heiglogo@year{1998}%
+    \def\heiglogo@scaleref{62.489pt}% 0.7 * 89.27
+    \def\heiglogo@nativeheight{89.27}%
+    \def\heiglogo@nativewidth{175.77}%
+    \def\heiglogo@textanchorx{184}%
+    \def\heiglogo@separatorx{179}%
+    \def\heiglogo@defsizemode{height}\def\heiglogo@defsize{18mm}%
+}
+\expandafter\def\csname heiglogo@setyear@2004\endcsname{%
+    \def\heiglogo@year{2004}%
+    \def\heiglogo@scaleref{49.63pt}% 0.7 * 70.9
+    \def\heiglogo@nativeheight{70.9}%
+    \def\heiglogo@nativewidth{34}%
+    \def\heiglogo@textanchorx{44}%
+    \def\heiglogo@separatorx{39}%
+    \def\heiglogo@defsizemode{height}\def\heiglogo@defsize{26mm}%
+}
+\expandafter\def\csname heiglogo@setyear@2009\endcsname{%
+    \def\heiglogo@year{2009}%
+    \def\heiglogo@scaleref{52.5pt}% 0.7 * 75 (wordmark bbox height, normalised)
+    \def\heiglogo@nativeheight{75}%
+    \def\heiglogo@nativewidth{224.29}%
+    \def\heiglogo@textanchorx{235.3}%
+    \def\heiglogo@separatorx{229.3}%
+    \def\heiglogo@defsizemode{width}\def\heiglogo@defsize{35mm}%
+}
+\expandafter\def\csname heiglogo@setyear@2020\endcsname{%
+    \def\heiglogo@year{2020}%
+    \def\heiglogo@scaleref{52.5pt}% 0.7 * 75
+    \def\heiglogo@nativeheight{75}%
+    \def\heiglogo@nativewidth{100}%
+    \def\heiglogo@textanchorx{125}%
+    \def\heiglogo@separatorx{114}%
+    \def\heiglogo@defsizemode{height}\def\heiglogo@defsize{18mm}%
+}
+\newcommand\heiglogo@setyear[1]{%
+    \@ifundefined{heiglogo@setyear@#1}
+        {\csname heiglogo@setyear@2020\endcsname}
+        {\csname heiglogo@setyear@#1\endcsname}%
+}
+
+\DeclareOption{1998}{\heiglogo@setyear{1998}}
+\DeclareOption{2004}{\heiglogo@setyear{2004}}
+\DeclareOption{2009}{\heiglogo@setyear{2009}}
+\DeclareOption{2020}{\heiglogo@setyear{2020}}
+\ProcessOptions\relax
+
+\expandafter\def\csname heiglogo@draw@2020\endcsname{%
+    \fill[\heiglogo@curcolor]
+    (74,18)--(56,18)--(56,12)--(68,12)--(68,12)
+    ..controls(67,7)and(63,5)..(57,5)
+    ..controls(50,5)and(45,10)..(45,17)
+    ..controls(45,24)and(50,30)..(57,30)
+    ..controls(63,30)and(67,27)..(69,23)
+    --(74,25)..controls(71,32)and(65,35)..(57,35)
+    ..controls(47,35)and(39,27)..(39,17)
+    ..controls(39,7)and(47,0)..(57,0)
+    ..controls(62,0)and(66,2)..(69,5)
+    --(69,1)--(74,1)--(74,17)--cycle;
+    \fill[\heiglogo@curcolor]
+    (74,47)--(46,47)--(46,56)--(70,56)--(70,61)
+    --(46,61)--(46,70)--(74,70)--(74,75)
+    --(40,75)--(40,42)--(74,42)--cycle;
+    \fill[\heiglogo@curcolor]
+    (27,61)--(5,61)--(5,75)--(0,75)--(0,42)
+    --(5,42)--(5,56)--(27,56)--(27,42)
+    --(33,42)--(33,75)--(27,75)--cycle;
+    \fill[\heiglogo@curcolor]
+    (19,6)--(19,29)--(33,29)--(33,34)
+    --(0,34)--(0,29)--(13,29)--(13,6)
+    --(0,6)--(0,1)--(33,1)--(33,6)--cycle;
+    \fill[\heiglogo@curcolor]
+    (88,75)--(90,75)--(87,65)--(85,65)
+    --(81,75)--(83,75)--(86,68)--cycle;
+    \fill[\heiglogo@curcolor]
+    (92,65)--(92,75)--(95,75)
+    ..controls(98,75)and(100,73)..(100,70)
+    ..controls(100,67)and(98,65)..(95,65)--cycle;
+    \fill[white]
+    (95,67)..controls(97,67)and(98,68)..(98,70)
+    ..controls(98,72)and(97,73)..(95,73)
+    --(94,73)--(94,67)--cycle;
+}
+
+\expandafter\def\csname heiglogo@draw@1998\endcsname{%
+    \ifheiglogo@iscolor
+        \def\heiglogo@c@a{heiglogo@green1998}%
+        \def\heiglogo@c@b{heiglogo@red1998}%
+        \def\heiglogo@c@c{heiglogo@black1998}%
+    \else
+        \let\heiglogo@c@a\heiglogo@curcolor
+        \let\heiglogo@c@b\heiglogo@curcolor
+        \let\heiglogo@c@c\heiglogo@curcolor
+    \fi
+        \fill[\heiglogo@c@a,even odd rule] (91.22,57.45) ..controls(98.92,58.46)and(104.47,59.11)..(112.89,60.98) ..controls(115.91,50.9)and(116.63,42.26)..(117.21,18.57) ..controls(131.68,33.33)and(134.78,38.8)..(134.78,42.4) ..controls(134.78,46.58)and(128.66,47.94)..(128.66,53.7) ..controls(128.66,58.02)and(132.84,60.83)..(136.15,60.97) ..controls(140.04,60.97)and(144.93,57.87)..(144.93,52.26) ..controls(144.93,39.59)and(128.23,20.8)..(104.47,0.71) --(100.87,0.71) --(101.45,17.99) ..controls(101.59,23.82)and(101.74,36.64)..(99.51,47.01) ..controls(97.93,53.99)and(96.27,53.99)..(91.23,53.99) --(91.23,57.45) --(91.23,57.45) --(91.22,57.45) --cycle;
+        \fill[\heiglogo@c@a,even odd rule] (169.63,11.3) ..controls(167.4,8.06)and(162.36,0.86)..(156.09,0.86) ..controls(155.37,0.86)and(150.55,0.86)..(150.55,5.83) ..controls(150.55,7.27)and(150.84,8.64)..(151.49,11.3) --(151.35,11.16) ..controls(148.76,7.13)and(144.29,0.72)..(136.45,0.72) ..controls(128.61,0.72)and(126.8,7.56)..(126.8,11.16) ..controls(126.8,24.12)and(140.77,40.03)..(151.35,40.03) ..controls(155.31,40.03)and(156.82,38.52)..(158.19,37.37) ..controls(160.13,44.21)and(162.37,51.34)..(162.37,52.56) ..controls(162.37,54.65)and(160.71,55.08)..(158.63,55.08) --(156.83,55.08) --(156.83,57.31) ..controls(168.42,58.17)and(172.6,59.11)..(175.77,59.69) --(165.76,26.07) ..controls(164.75,23.19)and(160.58,9.08)..(160.58,7.78) ..controls(160.58,7.42)and(160.72,6.7)..(161.59,6.7) ..controls(163.53,6.7)and(167.13,11.88)..(167.71,12.53) --(169.65,11.31) --(169.65,11.31) --(169.63,11.3) --cycle (141.91,6.69) ..controls(150.55,6.69)and(156.81,29.87)..(156.81,32.18) ..controls(156.81,32.76)and(156.67,36.57)..(153.28,36.57) ..controls(145.36,36.57)and(138.09,17.27)..(138.09,11.59) ..controls(138.09,11.16)and(138.23,6.69)..(141.91,6.69) --(141.91,6.69) --(141.91,6.69) --cycle;
+        \fill[\heiglogo@c@b,even odd rule] (83.3,19.5) ..controls(80.49,15.76)and(75.74,9.49)..(72.43,9.49) ..controls(71.57,9.49)and(70.34,9.99)..(70.34,11.29) ..controls(70.34,15.32)and(78.84,42.25)..(84.24,60.39) ..controls(74.81,58.3)and(61.7,57.15)..(56.09,56.72) --(56.09,53.41) ..controls(60.12,53.55)and(64.3,53.41)..(64.3,49.38) ..controls(63.65,46.43)and(62.5,42.4)..(61.28,38.08) ..controls(60.85,36.42)and(60.13,34.41)..(59.62,32.46) ..controls(57.6,26.48)and(55.3,20.8)..(52.78,17.7) ..controls(50.12,14.75)and(45.22,9.2)..(37.01,9.2) ..controls(23.76,9.2)and(20.67,22.16)..(20.23,32.89) --(55.37,32.89) ..controls(55.01,39.73)and(53.14,61.91)..(28.87,61.91) ..controls(12.74,61.91)and(0,49.89)..(0,31.1) ..controls(0,9.5)and(14.4,0)..(28.51,0) ..controls(38.81,0)and(46.37,3.46)..(54.14,13.39) ..controls(53.71,11.45)and(53.42,9.86)..(53.42,9.07) ..controls(53.42,5.97)and(55,0.57)..(63.07,0.57) ..controls(73.37,0.57)and(79.27,7.91)..(86.4,17.85) --(87.34,19.07) --(84.17,20.8) --(83.31,19.5) --(83.31,19.5) --(83.3,19.5) --cycle (29.45,57.88) ..controls(34.35,57.88)and(36.15,54.78)..(37.01,52.05) ..controls(38.09,48.09)and(38.09,41.54)..(38.23,37.65) --(19.58,37.65) ..controls(19.58,55.07)and(24.26,57.88)..(29.44,57.88) --(29.44,57.88) --(29.45,57.88) --cycle;
+        \fill[\heiglogo@c@b,even odd rule] (80.21,89.27) ..controls(73.95,89.27)and(70.99,83.8)..(70.99,80.92) ..controls(70.99,77.54)and(73.65,72.21)..(80.21,72.21) ..controls(85.68,72.21)and(89.86,76.03)..(89.86,80.63) ..controls(89.86,85.23)and(85.53,89.27)..(80.21,89.27) --(80.21,89.27) --cycle;
+        \fill[\heiglogo@c@c,even odd rule] (89.85,16.84) ..controls(95.83,16.84)and(100.58,21.74)..(100.58,27.64) ..controls(100.58,33.54)and(95.83,38.37)..(89.85,38.37) ..controls(83.87,38.37)and(79.27,33.47)..(79.27,27.64) ..controls(79.27,21.81)and(84.02,16.84)..(89.85,16.84) --(89.85,16.84) --cycle;
+}
+
+\expandafter\def\csname heiglogo@draw@2004\endcsname{%
+    \ifheiglogo@iscolor
+        \def\heiglogo@logocolor{heiglogo@red2004}%
+    \else
+        \let\heiglogo@logocolor\heiglogo@curcolor
+    \fi
+        \fill[\heiglogo@logocolor] (0,0) rectangle (34,70.9);
+        \fill[white,even odd rule] (26.2,13.2) --(18.8,13.2) ..controls(17.2,13.2)and(15.4,12.9)..(15.4,10.4) ..controls(15.4,9.5)and(15.7,8.9)..(16,8.5) ..controls(16.7,7.7)and(17.9,7.5)..(18.7,7.5) --(26.1,7.5) --(26.1,6.3) --(10.7,6.3) --(10.7,7.5) --(16.2,7.5) ..controls(15.6,7.6)and(14.3,8.7)..(14.3,10.6) ..controls(14.3,12.1)and(14.9,13.2)..(15.6,13.7) ..controls(16.4,14.3)and(17.4,14.3)..(18.7,14.3) --(26.1,14.3) --(26.1,13.2) --(26.2,13.2) --cycle;
+        \fill[white,even odd rule] (20.7,17.5) ..controls(20.7,17.5)and(20.9,17.5)..(21.1,17.5) ..controls(22.2,17.6)and(25.1,17.9)..(25.1,21.6) ..controls(25.1,23.9)and(23.5,25)..(23.5,25) --(25,24.8) ..controls(25,24.8)and(26.2,23.6)..(26.2,21.5) ..controls(26.2,16.6)and(22.1,16.2)..(20.4,16.2) ..controls(18.5,16.2)and(14.3,16.7)..(14.3,20.9) ..controls(14.3,25.1)and(18.9,25.3)..(20.1,25.3) ..controls(20.4,25.3)and(20.7,25.3)..(20.7,25.3) --(20.7,17.5) --(20.7,17.5) --cycle (15.4,21) ..controls(15.3,17.7)and(19.4,17.6)..(19.7,17.6) --(19.7,24.1) ..controls(19.7,24.1)and(15.4,24.2)..(15.4,21) --cycle;
+        \fill[white,even odd rule] (21.3,41) --(20.1,41) --(20.1,45.9) --(21.3,45.9) --(21.3,41) --cycle;
+        \fill[white,even odd rule] (26.4,60.3) ..controls(26.4,57.2)and(23.7,55.9)..(20.3,55.9) ..controls(17.1,55.9)and(14.4,57.7)..(14.4,60.4) ..controls(14.4,62.3)and(15.6,63.2)..(16.1,63.4) --(10.7,63.4) --(10.7,64.6) ..controls(10.7,64.6)and(20.9,64.6)..(22,64.6) ..controls(23.6,64.6)and(26.4,63.6)..(26.4,60.3) --cycle (18.9,63.4) ..controls(18.3,63.4)and(17,63.3)..(16.3,62.6) ..controls(15.8,62.2)and(15.5,61.4)..(15.5,60.4) ..controls(15.5,58.3)and(17.7,57.1)..(20.5,57.1) ..controls(23.1,57.1)and(25.4,58)..(25.4,60.4) ..controls(25.4,62.3)and(23.8,63.3)..(22.4,63.3) --(18.9,63.3) --(18.9,63.4) --cycle;
+        \fill[white,even odd rule] (14.6,54.2) ..controls(14.6,54.2)and(24.6,51.1)..(24.7,51) ..controls(24.9,50.9)and(24.9,50.9)..(24.7,50.8) ..controls(24.6,50.8)and(14.6,47.6)..(14.6,47.6) --(14.6,46.4) --(25.4,49.9) ..controls(26,50.2)and(26.3,50.5)..(26.3,51) ..controls(26.3,51.5)and(26.1,51.8)..(25.4,52.1) ..controls(25.4,52.1)and(14.6,55.5)..(14.6,55.5) --(14.6,54.2) --(14.6,54.2) --cycle;
+        \fill[white,even odd rule] (26.2,27.4) --(14.6,27.4) --(14.6,28.6) --(26.2,28.6) --(26.2,27.4) --cycle;
+        \fill[white,even odd rule] (12.8,27.4) --(11.5,27.4) --(11.5,28.6) --(12.8,28.6) --(12.8,27.4) --cycle;
+        \fill[white,even odd rule] (24,35.4) ..controls(24,34.3)and(24.3,32)..(23.1,32) ..controls(22.1,32)and(22.2,33.6)..(22.2,35.2) ..controls(22.2,37.7)and(20.7,39.3)..(18.3,39.3) ..controls(17,39.3)and(16,38.9)..(15.3,38.1) --(15.3,39.5) --(14.3,39.5) --(14.3,35.2) --(14.3,35.2) ..controls(14.3,35.2)and(14.3,35.1)..(14.3,35.1) ..controls(14.3,33.3)and(15.3,31.3)..(18.3,31.3) ..controls(20.3,31.3)and(21.3,32.6)..(21.4,33.1) ..controls(21.4,32.6)and(21.7,30.8)..(23.2,30.9) ..controls(24.1,30.9)and(24.5,31.4)..(24.7,32.4) ..controls(24.9,31.8)and(25.8,30.9)..(27.1,30.9) ..controls(28.7,30.9)and(30.1,32.4)..(30.1,35.4) ..controls(30.1,37.9)and(29,39.7)..(26.9,39.8) ..controls(25,39.7)and(24,38.4)..(24,35.4) --cycle (18.3,32.4) ..controls(16.6,32.4)and(15.3,33.2)..(15.3,35.2) ..controls(15.3,37.4)and(16.8,38.1)..(18.3,38.1) ..controls(20.3,38.1)and(21.2,36.9)..(21.2,35.1) ..controls(21.3,33.6)and(20.1,32.4)..(18.3,32.4) --cycle (29.2,35.3) ..controls(29.2,33.1)and(28.3,31.9)..(27.1,31.9) ..controls(26.1,31.9)and(25.3,32.7)..(25.2,33.4) ..controls(25.2,33.4)and(25.2,34.4)..(25.2,35.3) ..controls(25.2,37.8)and(26.1,38.5)..(27.1,38.5) ..controls(28.5,38.5)and(29.2,36.8)..(29.2,35.3) --cycle;
+}
+
+\expandafter\def\csname heiglogo@draw@2009\endcsname{%
+    \ifheiglogo@iscolor
+        \def\heiglogo@logocolor{heiglogo@red2009}%
+    \else
+        \let\heiglogo@logocolor\heiglogo@curcolor
+    \fi
+        \fill[\heiglogo@logocolor,even odd rule] (43.19,36.42) --(43.19,34.84) ..controls(43.43,30.75)and(44.61,19.29)..(58.82,19.29) ..controls(67.52,19.29)and(71.93,25.47)..(71.93,25.47) --(71.34,19.69) ..controls(71.34,19.69)and(66.89,15)..(58.66,15) ..controls(39.69,15)and(38.27,30.71)..(38.27,37.44) ..controls(38.27,44.61)and(40.31,60.79)..(56.26,60.87) ..controls(72.56,60.94)and(73.35,43.19)..(73.35,38.58) --(73.35,36.38) --(43.19,36.38) (56.42,56.97) ..controls(43.58,57.2)and(43.43,41.42)..(43.43,40.35) --(68.58,40.35) ..controls(68.58,40.35)and(68.9,56.73)..(56.42,56.97);
+        \fill[\heiglogo@logocolor] (133.31,34.13) rectangle (152.17,38.66);
+        \fill[\heiglogo@logocolor,even odd rule] (184.21,59.84) ..controls(184.21,59.84)and(172.13,21.34)..(171.97,20.91) ..controls(171.69,20.2)and(171.61,20.24)..(171.38,20.94) ..controls(171.22,21.38)and(159.17,59.84)..(159.17,59.84) --(154.41,59.84) --(167.64,18.31) ..controls(168.62,15.98)and(169.8,15)..(171.69,15) ..controls(173.58,15)and(174.8,15.94)..(175.79,18.31) --(188.98,59.84) --(184.21,59.84);
+        \fill[\heiglogo@logocolor] (81.14,15.35) rectangle (85.83,59.84);
+        \fill[\heiglogo@logocolor] (81.14,66.97) rectangle (85.87,71.81);
+        \fill[\heiglogo@logocolor,even odd rule] (111.93,23.9) ..controls(107.64,23.9)and(98.78,22.83)..(98.78,27.2) ..controls(98.78,31.06)and(105.12,30.59)..(111.3,30.59) ..controls(121.06,30.59)and(127.01,36.34)..(127.01,45.55) ..controls(127.01,50.35)and(125.31,54.33)..(122.28,57.01) --(127.52,57.01) --(127.52,60.91) --(110.98,60.91) ..controls(110.98,60.91)and(110.79,60.91)..(110.67,60.91) ..controls(103.66,60.91)and(95.94,57.13)..(95.94,45.51) ..controls(95.94,37.8)and(101.06,33.86)..(102.91,33.5) ..controls(101.02,33.5)and(94.21,32.52)..(94.37,26.46) ..controls(94.45,23.07)and(96.26,21.34)..(100.04,20.71) ..controls(97.91,19.96)and(94.13,16.57)..(94.13,11.42) ..controls(94.13,5.08)and(99.88,0)..(111.5,0) ..controls(120.94,0)and(128.11,4.09)..(128.27,12.17) ..controls(128.43,19.8)and(123.35,23.9)..(112.01,23.9) (100.35,45.51) ..controls(100.35,52.17)and(103.54,56.93)..(111.3,56.93) ..controls(119.61,56.93)and(122.56,51.02)..(122.56,45.51) ..controls(122.56,37.95)and(117.8,34.17)..(110.94,34.17) ..controls(104.96,34.17)and(100.35,38.78)..(100.35,45.51) --(100.35,45.51) --cycle (111.42,3.94) ..controls(103.03,3.94)and(98.43,7.32)..(98.43,12.17) ..controls(98.43,15.87)and(101.65,18.98)..(104.13,19.65) ..controls(104.13,19.65)and(108.07,19.72)..(111.61,19.65) ..controls(121.06,19.57)and(123.78,16.02)..(123.78,12.17) ..controls(123.78,6.65)and(117.44,3.94)..(111.46,3.94);
+        \fill[\heiglogo@logocolor,even odd rule] (26.57,15.35) --(26.57,43.78) ..controls(26.57,50.12)and(25.59,56.77)..(15.94,56.77) ..controls(12.32,56.77)and(10.2,55.79)..(8.54,54.37) ..controls(5.35,51.65)and(4.69,47.13)..(4.69,43.94) --(4.69,15.31) --(0,15.31) --(0,74.76) --(4.69,74.76) --(4.69,53.54) ..controls(5.2,55.94)and(9.13,60.87)..(16.77,60.87) ..controls(22.68,60.87)and(26.89,58.66)..(28.78,55.75) ..controls(30.94,52.64)and(31.26,48.94)..(31.26,43.94) --(31.26,15.31) --(26.57,15.31);
+        \fill[\heiglogo@logocolor,even odd rule] (207.83,14.69) ..controls(195.98,14.69)and(190.98,25.24)..(190.98,38.03) ..controls(190.98,50.83)and(197.72,60.83)..(208.15,60.75) ..controls(215.63,60.67)and(219.09,56.26)..(219.57,54.37) --(219.57,75) --(224.29,75) --(224.29,31.38) ..controls(224.29,25.2)and(220.63,14.72)..(207.83,14.72) (219.57,43.46) ..controls(219.57,45.63)and(219.17,50.87)..(216.69,53.62) ..controls(215.04,55.55)and(212.2,56.89)..(208.39,56.89) ..controls(200.24,56.89)and(195.67,48.31)..(195.75,37.83) ..controls(195.83,27.72)and(199.41,18.82)..(208.39,18.82) ..controls(215.83,18.82)and(219.57,24.96)..(219.57,30.43) --(219.57,43.46);
+}
+
 \newcommand\heiglogo@draw[2]{%
     \begin{tikzpicture}[x=0.7pt,y=0.7pt,scale=\heiglogo@scale,inner sep=0,outer sep=0]
-        \fill[\heiglogo@curcolor]
-        (74,18)--(56,18)--(56,12)--(68,12)--(68,12)
-        ..controls(67,7)and(63,5)..(57,5)
-        ..controls(50,5)and(45,10)..(45,17)
-        ..controls(45,24)and(50,30)..(57,30)
-        ..controls(63,30)and(67,27)..(69,23)
-        --(74,25)..controls(71,32)and(65,35)..(57,35)
-        ..controls(47,35)and(39,27)..(39,17)
-        ..controls(39,7)and(47,0)..(57,0)
-        ..controls(62,0)and(66,2)..(69,5)
-        --(69,1)--(74,1)--(74,17)--cycle;
-        \fill[\heiglogo@curcolor]
-        (74,47)--(46,47)--(46,56)--(70,56)--(70,61)
-        --(46,61)--(46,70)--(74,70)--(74,75)
-        --(40,75)--(40,42)--(74,42)--cycle;
-        \fill[\heiglogo@curcolor]
-        (27,61)--(5,61)--(5,75)--(0,75)--(0,42)
-        --(5,42)--(5,56)--(27,56)--(27,42)
-        --(33,42)--(33,75)--(27,75)--cycle;
-        \fill[\heiglogo@curcolor]
-        (19,6)--(19,29)--(33,29)--(33,34)
-        --(0,34)--(0,29)--(13,29)--(13,6)
-        --(0,6)--(0,1)--(33,1)--(33,6)--cycle;
-        \fill[\heiglogo@curcolor]
-        (88,75)--(90,75)--(87,65)--(85,65)
-        --(81,75)--(83,75)--(86,68)--cycle;
-        \fill[\heiglogo@curcolor]
-        (92,65)--(92,75)--(95,75)
-        ..controls(98,75)and(100,73)..(100,70)
-        ..controls(100,67)and(98,65)..(95,65)--cycle;
-        \fill[white]
-        (95,67)..controls(97,67)and(98,68)..(98,70)
-        ..controls(98,72)and(97,73)..(95,73)
-        --(94,73)--(94,67)--cycle;
+        \ifheiglogo@hastexttitle
+            \pgfmathsetmacro\heiglogo@bbright
+                {\heiglogo@textanchorx+\heiglogo@textwidth/(0.7*\heiglogo@scale)}%
+        \else
+            \ifheiglogo@hastextsubtitle
+                \pgfmathsetmacro\heiglogo@bbright
+                    {\heiglogo@textanchorx+\heiglogo@textwidth/(0.7*\heiglogo@scale)}%
+            \else
+                \let\heiglogo@bbright\heiglogo@nativewidth
+            \fi
+        \fi
+        \useasboundingbox (0,0) rectangle (\heiglogo@bbright,\heiglogo@nativeheight);
+        \csname heiglogo@draw@\heiglogo@year\endcsname
 
         \ifheiglogo@hastexttitle
             \fill[\heiglogo@curcolor]
-            (115,1)--(114,1)--(114,75)--(115,75)--cycle;
+            (\heiglogo@separatorx,0)--(\heiglogo@separatorx,\heiglogo@nativeheight)
+            --(\heiglogo@separatorx+1,\heiglogo@nativeheight)--(\heiglogo@separatorx+1,0)--cycle;
         \else
             \ifheiglogo@hastextsubtitle
                 \fill[\heiglogo@curcolor]
-                (115,1)--(114,1)--(114,75)--(115,75)--cycle;
+                (\heiglogo@separatorx,0)--(\heiglogo@separatorx,\heiglogo@nativeheight)
+                --(\heiglogo@separatorx+1,\heiglogo@nativeheight)--(\heiglogo@separatorx+1,0)--cycle;
             \fi
         \fi
 
         \ifheiglogo@hastexttitle
-        \node[anchor=north west,inner sep=0,outer sep=0] at (125,75)
+        \node[anchor=north west,inner sep=0,outer sep=0] at (\heiglogo@textanchorx,\heiglogo@nativeheight)
         {%
             \begingroup
-            \color{\heiglogo@curcolor}\heiglogoFont\bfseries
+            \color{\heiglogo@curcolor}\heiglogo@ensurefont\heiglogoFont\bfseries
             \setlength{\parskip}{0pt}%
             \lineskiplimit=0pt\lineskip=0pt%
-            % impose 5 lignes pile sur la hauteur du logo:
             \fontsize{\heiglogo@title@size}{\heiglogo@title@baseline}\selectfont
             \parbox[t][\heiglogo@height][t]{\heiglogo@textwidth}{%
                 \raggedright\MakeUppercase{#1}%
@@ -102,10 +246,10 @@
         };
         \fi
         \ifheiglogo@hastextsubtitle
-        \node[anchor=south west,inner sep=0,outer sep=0] at (125,2)
+        \node[anchor=south west,inner sep=0,outer sep=0] at (\heiglogo@textanchorx,2)
         {%
             \begingroup
-            \color{\heiglogo@curcolor}\heiglogoFont
+            \color{\heiglogo@curcolor}\heiglogo@ensurefont\heiglogoFont
             \setlength{\parskip}{0pt}%
             \lineskiplimit=0pt\lineskip=0pt%
             \fontsize{\heiglogo@title@size}{\heiglogo@title@baseline}\selectfont
@@ -120,7 +264,7 @@
 
 \newcommand\heiglogo@relative[2]{%
     \begingroup
-    \pgfmathsetmacro{\heiglogo@scale}{\heiglogo@height/52.5pt}%
+    \pgfmathsetmacro{\heiglogo@scale}{\heiglogo@height/\heiglogo@scaleref}%
     \heiglogo@draw{#1}{#2}%
     \endgroup
 }
@@ -128,7 +272,7 @@
 \newcommand\heiglogo@absolute[2]{%
     \begin{tikzpicture}[remember picture,overlay,inner sep=0,outer sep=0,baseline]
         \begingroup
-        \pgfmathsetmacro{\heiglogo@scale}{\heiglogo@height/52.5pt}%
+        \pgfmathsetmacro{\heiglogo@scale}{\heiglogo@height/\heiglogo@scaleref}%
         \ifdim\heiglogo@right>-1pt
             \node[anchor=north east,inner sep=0,outer sep=0] at
             ([xshift=-\heiglogo@right,yshift=-\heiglogo@top] current page.north east)
@@ -146,6 +290,8 @@
 \ExplSyntaxOn
 
 \dim_new:N  \l_heiglogo_height_dim
+\dim_new:N  \l_heiglogo_size_dim
+\csname tl_new:N\endcsname \l_heiglogo_sizemode_tl
 \dim_new:N  \l_heiglogo_left_dim
 \dim_new:N  \l_heiglogo_right_dim
 \dim_new:N  \l_heiglogo_top_dim
@@ -153,10 +299,12 @@
 \bool_new:N \l_heiglogo_relative_bool
 \bool_new:N \l_heiglogo_color_bool
 \int_new:N \l_heiglogo_lines_int
+\csname tl_new:N\endcsname \l_heiglogo_year_tl
 \dim_new:N \l_heiglogo_title_baseline_dim
 \dim_new:N \l_heiglogo_title_size_dim
 
-\dim_new:N  \g_heiglogo_def_height_dim
+\dim_new:N  \g_heiglogo_def_size_dim
+\csname tl_new:N\endcsname \g_heiglogo_def_sizemode_tl
 \dim_new:N  \g_heiglogo_def_left_dim
 \dim_new:N  \g_heiglogo_def_right_dim
 \dim_new:N  \g_heiglogo_def_top_dim
@@ -164,8 +312,10 @@
 \bool_new:N \g_heiglogo_def_relative_bool
 \bool_new:N \g_heiglogo_def_color_bool
 \int_new:N \g_heiglogo_def_lines_int
+\csname tl_new:N\endcsname \g_heiglogo_def_year_tl
 
-\dim_gset:Nn  \g_heiglogo_def_height_dim    { 1.8cm }
+\csname tl_gset:Nn\endcsname \g_heiglogo_def_sizemode_tl { none }
+\dim_gset:Nn  \g_heiglogo_def_size_dim      { 0pt }
 \dim_gset:Nn  \g_heiglogo_def_left_dim      { 10mm }
 \dim_gset:Nn  \g_heiglogo_def_right_dim     { -1pt } % -1pt => indéfini
 \dim_gset:Nn  \g_heiglogo_def_top_dim       { 10mm }
@@ -173,10 +323,14 @@
 \bool_gset_false:N \g_heiglogo_def_relative_bool
 \bool_gset_false:N \g_heiglogo_def_color_bool
 \int_gset:Nn \g_heiglogo_def_lines_int { 5 }
+\csname tl_gset:Nn\endcsname \g_heiglogo_def_year_tl { \heiglogo@year }
 
 \keys_define:nn { heiglogo }
 {
-    height    .dim_set:N = \l_heiglogo_height_dim,
+    height    .code:n = { \tl_set:Nn \l_heiglogo_sizemode_tl { height }
+                          \dim_set:Nn \l_heiglogo_size_dim {#1} },
+    width     .code:n = { \tl_set:Nn \l_heiglogo_sizemode_tl { width }
+                          \dim_set:Nn \l_heiglogo_size_dim {#1} },
     left      .dim_set:N = \l_heiglogo_left_dim,
     right     .dim_set:N = \l_heiglogo_right_dim,
     top       .dim_set:N = \l_heiglogo_top_dim,
@@ -184,6 +338,11 @@
     color     .bool_set:N = \l_heiglogo_color_bool,
     textwidth .dim_set:N  = \l_heiglogo_textwidth_dim,
     lines     .int_set:N  = \l_heiglogo_lines_int,
+    year      .choice:,
+    year / 1998 .code:n = { \tl_set:Nn \l_heiglogo_year_tl { 1998 } },
+    year / 2004 .code:n = { \tl_set:Nn \l_heiglogo_year_tl { 2004 } },
+    year / 2009 .code:n = { \tl_set:Nn \l_heiglogo_year_tl { 2009 } },
+    year / 2020 .code:n = { \tl_set:Nn \l_heiglogo_year_tl { 2020 } },
 }
 
 \NewDocumentCommand \heiglogoSetup { m }
@@ -192,7 +351,10 @@
 }
 \keys_define:nn { heiglogo / setup }
 {
-    height    .dim_set:N = \g_heiglogo_def_height_dim,
+    height    .code:n = { \tl_gset:Nn \g_heiglogo_def_sizemode_tl { height }
+                          \dim_gset:Nn \g_heiglogo_def_size_dim {#1} },
+    width     .code:n = { \tl_gset:Nn \g_heiglogo_def_sizemode_tl { width }
+                          \dim_gset:Nn \g_heiglogo_def_size_dim {#1} },
     left      .dim_set:N = \g_heiglogo_def_left_dim,
     right     .dim_set:N = \g_heiglogo_def_right_dim,
     top       .dim_set:N = \g_heiglogo_def_top_dim,
@@ -200,13 +362,19 @@
     color     .bool_set:N = \g_heiglogo_def_color_bool,
     textwidth .dim_set:N  = \g_heiglogo_def_textwidth_dim,
     lines     .int_set:N  = \g_heiglogo_def_lines_int,
+    year      .choice:,
+    year / 1998 .code:n = { \tl_gset:Nn \g_heiglogo_def_year_tl { 1998 } },
+    year / 2004 .code:n = { \tl_gset:Nn \g_heiglogo_def_year_tl { 2004 } },
+    year / 2009 .code:n = { \tl_gset:Nn \g_heiglogo_def_year_tl { 2009 } },
+    year / 2020 .code:n = { \tl_gset:Nn \g_heiglogo_def_year_tl { 2020 } },
 }
 
 \NewDocumentCommand{\logo}{ O{} g g }
 {
     \group_begin:
     % 1. Reset defaults
-    \dim_set_eq:NN  \l_heiglogo_height_dim    \g_heiglogo_def_height_dim
+    \dim_set_eq:NN  \l_heiglogo_size_dim      \g_heiglogo_def_size_dim
+    \csname tl_set_eq:NN\endcsname \l_heiglogo_sizemode_tl \g_heiglogo_def_sizemode_tl
     \dim_set_eq:NN  \l_heiglogo_left_dim      \g_heiglogo_def_left_dim
     \dim_set_eq:NN  \l_heiglogo_right_dim     \g_heiglogo_def_right_dim
     \dim_set_eq:NN  \l_heiglogo_top_dim       \g_heiglogo_def_top_dim
@@ -214,14 +382,40 @@
     \bool_set_eq:NN \l_heiglogo_relative_bool \g_heiglogo_def_relative_bool
     \bool_set_eq:NN \l_heiglogo_color_bool    \g_heiglogo_def_color_bool
     \int_set_eq:NN  \l_heiglogo_lines_int     \g_heiglogo_def_lines_int
+\csname tl_set_eq:NN\endcsname   \l_heiglogo_year_tl       \g_heiglogo_def_year_tl
 
     % 2. Current call options
     \keys_set:nn { heiglogo } {#1}
 
     % 3. Pass to TikZ macros
     \bool_if:NTF \l_heiglogo_color_bool
-    { \def\heiglogo@curcolor{heiglogo@red} }
-    { \def\heiglogo@curcolor{black} }
+        {
+            \heiglogo@iscolortrue
+            \def\heiglogo@curcolor{heiglogo@red}
+        }
+        {
+            \heiglogo@iscolorfalse
+            \def\heiglogo@curcolor{black}
+        }
+        \exp_args:NV \heiglogo@setyear \l_heiglogo_year_tl
+
+    % 3b. Resolve the effective height from the size specification.
+    % If the user gave neither height nor width, fall back to the vintage default.
+    \tl_if_eq:NnT \l_heiglogo_sizemode_tl { none }
+    {
+        \tl_set:Nx  \l_heiglogo_sizemode_tl { \heiglogo@defsizemode }
+        \dim_set:Nn \l_heiglogo_size_dim   { \heiglogo@defsize }
+    }
+    % Width sizing is converted to the equivalent height via the aspect ratio
+    % (nativeheight / nativewidth), so everything downstream is height-based.
+    \tl_if_eq:NnTF \l_heiglogo_sizemode_tl { width }
+    {
+        \dim_set:Nn \l_heiglogo_height_dim
+        { \fp_to_dim:n { \dim_to_fp:n { \l_heiglogo_size_dim }
+            * \heiglogo@nativeheight / \heiglogo@nativewidth } }
+    }
+    { \dim_set_eq:NN \l_heiglogo_height_dim \l_heiglogo_size_dim }
+
     \edef\heiglogo@height   {\the\l_heiglogo_height_dim}
     \edef\heiglogo@left     {\the\l_heiglogo_left_dim}
     \edef\heiglogo@right    {\the\l_heiglogo_right_dim}
