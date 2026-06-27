@@ -1156,7 +1156,7 @@ wheels = [
 
 [[package]]
 name = "texsmith"
-version = "0.3.1"
+version = "0.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -1185,9 +1185,9 @@ dependencies = [
     { name = "typer" },
     { name = "unicodeblocks" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/88/89/45aa39eff1578ef17a2d3bac3cc91dd951d750e53376643181c3e099f76b/texsmith-0.3.1.tar.gz", hash = "sha256:e4755c6681be9a10a393c7647c7790a35d4b69b4342dab1d520c81b814409f45", size = 6501021, upload-time = "2026-06-12T16:04:34.492Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/42/47/0c58da6e1d83f9d2b8644438a909a8e0385136ef4ce30bcb59fc9ea4d54b/texsmith-0.4.0.tar.gz", hash = "sha256:890750076d62c865ade48d306fa766d3847255bd5379236a8bb3bb7d557e210d", size = 6570480, upload-time = "2026-06-27T15:42:03.747Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2e/4b/ed33a070dd1eb104db2e5860169fe13f8a3aac74c11e6e3a4f2ba24ab4ca/texsmith-0.3.1-py3-none-any.whl", hash = "sha256:d1bab3e801530305c0d5d3f0d34bbd60cfb4498b44ee343c6aabfe2e56beb1ff", size = 574104, upload-time = "2026-06-12T16:04:32.476Z" },
+    { url = "https://files.pythonhosted.org/packages/76/a5/b45cdc3f48fd1cd9eb7bb88192794c6ec6ed82b950944df4a19868951c88/texsmith-0.4.0-py3-none-any.whl", hash = "sha256:df19b1d3efa1e6bf81deb6d3654f7764e5efc68d2f53b917fa5301fdc31ca1b7", size = 626975, upload-time = "2026-06-27T15:42:01.74Z" },
 ]
 
 [[package]]
