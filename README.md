@@ -21,13 +21,17 @@ In your document's YAML front matter (or in `texsmith.yaml`), append the
 fragment to the rendering pipeline:
 
 ```yaml
-fragments:
-  append:
-    - heiglogo
+press:
+  template: article
+  fragments:
+    append:
+      - heiglogo
 heiglogo:
   color: false   # set to true for the red HEIG-VD logo
   year: auto     # auto | 1998 | 2004 | 2009 | 2020
 ```
+
+(The legacy top-level `fragments:` key is still honoured by TeXSmith 0.8.)
 
 The logo is positioned 1 cm from the top-left of the page on every page of
 the document.
@@ -80,7 +84,7 @@ Output (one folder per scenario) lands under `demo/output/`.
 
 ## Requirements
 
-- TeXSmith ≥ 0.3.0
+- TeXSmith ≥ 0.8, < 1.0
 - A LaTeX engine with `xelatex` or `lualatex` (the bundled `heiglogo.sty`
   uses `fontspec` and refuses `pdflatex`).
 - The `TeX Gyre Heros` font family (already present in standard TeX Live
@@ -94,8 +98,9 @@ The package ships these files under
 - `heiglogo.sty` — the docstrip-generated LaTeX package (now multi-vintage).
 - `heiglogo.jinja.tex` — a one-line Jinja template that calls
   `\AddToShipoutPictureBG*{\logo[..., year=NNNN]}`.
-- `fragment.toml` — a declarative description of the fragment, kept in sync
-  for documentation and as a static fallback.
+- `fragment.toml` — the manifest TeXSmith reads when the fragment is
+  resolved *by path*; it names the same `entrypoint` as the
+  `texsmith.fragments` entry point, so both routes yield the same object.
 
 Choosing the vintage from the document date needs a little Python, so the
 fragment is registered as an **object** rather than a bare directory.

@@ -142,6 +142,33 @@ class TestTemplateRendering:
         assert "color=true" in out
 
 
+class TestApiSurface:
+    """The bits of the 0.8 ``BaseFragment`` contract this fragment relies on."""
+
+    def test_pieces_target_a_template_variable_not_a_slot(self) -> None:
+        # 0.7 renamed ``FragmentPiece.slot`` to ``variable``; 0.8 raises when a
+        # fragment targets a name the template declares as a document slot.
+        for piece in fragment.pieces:
+            assert piece.variable == "extra_packages"
+            assert not hasattr(piece, "slot")
+
+    def test_build_config_and_inject_accept_an_emitter(
+        self, frag: HeigLogoFragment
+    ) -> None:
+        # ``render_fragments`` always passes ``emitter=`` by keyword.
+        context: dict = {"date": "2011-01-01"}
+        config = frag.build_config(context, overrides=None, emitter=None)
+        assert config.year == "2009"
+        frag.inject(config, context, overrides=None, emitter=None)
+        assert context["heiglogo_year"] == "2009"
+
+    def test_package_piece_output_filename(self) -> None:
+        package = next(p for p in fragment.pieces if p.kind == "package")
+        assert package.output_filename("heiglogo") == "heiglogo.sty"
+        inline = next(p for p in fragment.pieces if p.kind == "inline")
+        assert inline.output_filename("heiglogo") is None
+
+
 class TestRegistry:
     """The fragment should be discoverable through the entry point."""
 
@@ -150,3 +177,87 @@ class TestRegistry:
 
         resolved = FRAGMENT_REGISTRY.resolve("heiglogo")
         assert getattr(resolved, "name", None) == "heiglogo"
+
+    def test_manifest_resolves_to_the_same_object(self) -> None:
+        # ``fragment.toml`` names the entrypoint, so resolving the directory by
+        # path yields the very same singleton (and its auto-vintage logic).
+        from texsmith.core.fragments import FRAGMENT_REGISTRY
+
+        by_name = FRAGMENT_REGISTRY.resolve("heiglogo")
+        by_path = FRAGMENT_REGISTRY.resolve(str(FRAGMENT_PATH))
+        assert by_path is by_name
+
+    def test_attributes_are_owned_by_the_fragment(self) -> None:
+        from texsmith.core.fragments import FRAGMENT_REGISTRY
+
+        FRAGMENT_REGISTRY.resolve("heiglogo")
+        attributes = FRAGMENT_REGISTRY.attributes_for("heiglogo")
+        assert set(attributes) == {"heiglogo_color", "heiglogo_year"}
+        assert {spec.owner for spec in attributes.values()} == {"heiglogo"}
+
+    def test_attribute_defaults_are_collected(self) -> None:
+        from texsmith.core.fragments import collect_fragment_attribute_defaults
+
+        defaults = collect_fragment_attribute_defaults(["heiglogo"])
+        assert defaults == {"heiglogo_color": False, "heiglogo_year": "auto"}
+
+
+class TestRenderFragments:
+    """Drive TeXSmith's real rendering entry point end to end."""
+
+    @staticmethod
+    def _render(tmp_path: Path, **context: object) -> tuple[object, dict]:
+        from texsmith.core.fragments import render_fragments
+
+        payload: dict = dict(context)
+        result = render_fragments(
+            ["heiglogo"],
+            context=payload,
+            output_dir=tmp_path,
+            declared_slots={"mainmatter", "abstract", "appendix", "backmatter"},
+            declared_variables={"extra_packages"},
+            template_name="article",
+        )
+        return result, payload
+
+    def test_writes_the_package_and_injects_the_usepackage(self, tmp_path: Path) -> None:
+        result, _ = self._render(tmp_path, date="2026-01-01")
+        assert (tmp_path / "heiglogo.sty").is_file()
+        assert result.packages == ["heiglogo"]
+        injections = result.variable_injections["extra_packages"]
+        assert injections[0] == "\\usepackage{heiglogo}"
+        assert "year=2020" in injections[1]
+        assert result.providers["extra_packages"] == ["heiglogo", "heiglogo"]
+
+    def test_attribute_override_selects_the_vintage(self, tmp_path: Path) -> None:
+        from texsmith.core.fragments import render_fragments
+
+        payload: dict = {"date": "2026-01-01"}
+        result = render_fragments(
+            ["heiglogo"],
+            context=payload,
+            output_dir=tmp_path,
+            overrides={"heiglogo": {"year": "1998", "color": True}},
+            declared_variables={"extra_packages"},
+            template_name="article",
+        )
+        inline = result.variable_injections["extra_packages"][1]
+        assert "year=1998" in inline
+        assert "color=true" in inline
+
+    def test_auto_vintage_from_the_document_date(self, tmp_path: Path) -> None:
+        _, payload = self._render(tmp_path, date="2006-09-01")
+        assert payload["heiglogo_year"] == "2004"
+
+    def test_targeting_a_declared_slot_is_refused(self, tmp_path: Path) -> None:
+        from texsmith.core.fragments import render_fragments
+        from texsmith.core.templates.manifest import TemplateError
+
+        with pytest.raises(TemplateError, match="document slot"):
+            render_fragments(
+                ["heiglogo"],
+                context={},
+                output_dir=tmp_path,
+                declared_slots={"extra_packages"},
+                template_name="article",
+            )

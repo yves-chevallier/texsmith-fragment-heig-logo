@@ -27,7 +27,9 @@ classifiers = [
 dependencies = [
     # Object-oriented fragments (BaseFragment) and entry points returning a
     # fragment object — required for the date-driven vintage selection.
-    "texsmith>=0.3.0",
+    # 0.8 renamed ``FragmentPiece.slot`` to ``variable`` and passes ``emitter``
+    # to ``build_config``/``inject``, so 0.8 is the floor.
+    "texsmith>=0.8,<1.0",
 ]
 
 [dependency-groups]

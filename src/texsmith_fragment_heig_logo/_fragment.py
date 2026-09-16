@@ -13,8 +13,10 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, ClassVar
 
+from texsmith.core.coerce import coerce_bool
 from texsmith.core.fragments.base import BaseFragment, FragmentPiece
 from texsmith.core.templates.manifest import TemplateAttributeSpec
+from texsmith.diagnostics import DiagnosticEmitter
 
 from ._vintage import LATEST_VINTAGE, VINTAGES, resolve_vintage
 
@@ -24,22 +26,14 @@ __all__ = ["HeigLogoConfig", "HeigLogoFragment"]
 
 
 def _coerce_bool(value: Any, *, default: bool = False) -> bool:
-    """Interpret a front-matter value as a boolean, tolerating strings."""
-    if value is None:
-        return default
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, (int, float)):
-        return bool(value)
-    if isinstance(value, str):
-        token = value.strip().lower()
-        if not token:
-            return default
-        if token in {"true", "yes", "on", "1"}:
-            return True
-        if token in {"false", "no", "off", "0"}:
-            return False
-    return default
+    """Interpret a front-matter value as a boolean, tolerating strings.
+
+    TeXSmith owns the spelling of a boolean written as text
+    (:func:`texsmith.core.coerce.coerce_bool`); ``None`` there means "absent
+    or not a boolean", which is this fragment's ``default``.
+    """
+    resolved = coerce_bool(value)
+    return default if resolved is None else resolved
 
 
 class HeigLogoConfig:
@@ -71,7 +65,9 @@ class HeigLogoFragment(BaseFragment[HeigLogoConfig]):
         FragmentPiece(
             template_path=FRAGMENT_PATH / "heiglogo.jinja.tex",
             kind="inline",
-            slot="extra_packages",
+            # 0.7 renamed ``FragmentPiece.slot`` to ``variable``: a slot is a
+            # region a document is assigned to, a variable an injection point.
+            variable="extra_packages",
         ),
     ]
     attributes: ClassVar[dict[str, TemplateAttributeSpec]] = {
@@ -99,9 +95,14 @@ class HeigLogoFragment(BaseFragment[HeigLogoConfig]):
     }
 
     def build_config(
-        self, context: Mapping[str, Any], overrides: Mapping[str, Any] | None = None
+        self,
+        context: Mapping[str, Any],
+        overrides: Mapping[str, Any] | None = None,
+        *,
+        emitter: DiagnosticEmitter | None = None,
     ) -> HeigLogoConfig:
         _ = overrides
+        _ = emitter
         color = _coerce_bool(context.get("heiglogo_color"))
         vintage = resolve_vintage(context.get("heiglogo_year"), context.get("date"))
         return HeigLogoConfig(color=color, year=vintage)
@@ -111,8 +112,11 @@ class HeigLogoFragment(BaseFragment[HeigLogoConfig]):
         config: HeigLogoConfig,
         context: dict[str, Any],
         overrides: Mapping[str, Any] | None = None,
+        *,
+        emitter: DiagnosticEmitter | None = None,
     ) -> None:
         _ = overrides
+        _ = emitter
         context["heiglogo_color"] = config.color
         context["heiglogo_year"] = config.year
 
