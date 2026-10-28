@@ -9,6 +9,7 @@ import. The entry point is the lazy factory :func:`.load_fragment`.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, ClassVar
@@ -24,6 +25,12 @@ FRAGMENT_PATH: Path = Path(__file__).resolve().parent / "fragment"
 
 __all__ = ["HeigLogoConfig", "HeigLogoFragment"]
 
+DEFAULT_OFFSET = "1cm"
+
+# The offsets are written verbatim into the LaTeX source: only a plain TeX
+# length (a number and a unit) gets through.
+_LENGTH = re.compile(r"-?(\d+(\.\d*)?|\.\d+)\s*(pt|mm|cm|in|bp|pc|dd|cc|sp|em|ex)")
+
 
 def _coerce_bool(value: Any, *, default: bool = False) -> bool:
     """Interpret a front-matter value as a boolean, tolerating strings.
@@ -36,17 +43,41 @@ def _coerce_bool(value: Any, *, default: bool = False) -> bool:
     return default if resolved is None else resolved
 
 
+def _coerce_length(value: Any, *, name: str) -> str:
+    """Return ``value`` as a TeX length, ``1cm`` when absent."""
+    if value is None or (isinstance(value, str) and not value.strip()):
+        return DEFAULT_OFFSET
+    length = str(value).strip()
+    if not _LENGTH.fullmatch(length):
+        raise ValueError(
+            f"Invalid heiglogo {name} {length!r}: expected a TeX length such as 17mm"
+        )
+    return length
+
+
 class HeigLogoConfig:
     """Resolved fragment options handed to the Jinja template."""
 
-    __slots__ = ("color", "year")
+    __slots__ = ("color", "left", "top", "year")
 
-    def __init__(self, *, color: bool, year: str) -> None:
+    def __init__(
+        self,
+        *,
+        color: bool,
+        year: str,
+        left: str = DEFAULT_OFFSET,
+        top: str = DEFAULT_OFFSET,
+    ) -> None:
         self.color = color
         self.year = year
+        self.left = left
+        self.top = top
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
-        return f"HeigLogoConfig(color={self.color!r}, year={self.year!r})"
+        return (
+            f"HeigLogoConfig(color={self.color!r}, year={self.year!r}, "
+            f"left={self.left!r}, top={self.top!r})"
+        )
 
 
 class HeigLogoFragment(BaseFragment[HeigLogoConfig]):
@@ -54,7 +85,8 @@ class HeigLogoFragment(BaseFragment[HeigLogoConfig]):
 
     name: ClassVar[str] = "heiglogo"
     description: ClassVar[str] = (
-        "Logo HEIG-VD sur la première page, en haut à gauche, à 1cm des bords."
+        "Logo HEIG-VD sur la première page, en haut à gauche, à 1cm des bords "
+        "par défaut."
     )
     pieces: ClassVar[list[FragmentPiece]] = [
         FragmentPiece(
@@ -86,12 +118,29 @@ class HeigLogoFragment(BaseFragment[HeigLogoConfig]):
                 + "."
             ),
         ),
+        "heiglogo_left": TemplateAttributeSpec(
+            default=DEFAULT_OFFSET,
+            format="raw",
+            sources=["heiglogo.left", "heiglogo_left"],
+            description=(
+                "Distance du logo au bord gauche de la feuille, par exemple 17mm "
+                "pour ménager une gouttière de reliure."
+            ),
+        ),
+        "heiglogo_top": TemplateAttributeSpec(
+            default=DEFAULT_OFFSET,
+            format="raw",
+            sources=["heiglogo.top", "heiglogo_top"],
+            description="Distance du logo au bord supérieur de la feuille.",
+        ),
     }
     config_cls: ClassVar[type[HeigLogoConfig]] = HeigLogoConfig
     source: ClassVar[Path] = FRAGMENT_PATH
     context_defaults: ClassVar[dict[str, Any]] = {
         "heiglogo_color": False,
         "heiglogo_year": LATEST_VINTAGE,
+        "heiglogo_left": DEFAULT_OFFSET,
+        "heiglogo_top": DEFAULT_OFFSET,
     }
 
     def build_config(
@@ -105,7 +154,9 @@ class HeigLogoFragment(BaseFragment[HeigLogoConfig]):
         _ = emitter
         color = _coerce_bool(context.get("heiglogo_color"))
         vintage = resolve_vintage(context.get("heiglogo_year"), context.get("date"))
-        return HeigLogoConfig(color=color, year=vintage)
+        left = _coerce_length(context.get("heiglogo_left"), name="left")
+        top = _coerce_length(context.get("heiglogo_top"), name="top")
+        return HeigLogoConfig(color=color, year=vintage, left=left, top=top)
 
     def inject(
         self,
@@ -119,6 +170,8 @@ class HeigLogoFragment(BaseFragment[HeigLogoConfig]):
         _ = emitter
         context["heiglogo_color"] = config.color
         context["heiglogo_year"] = config.year
+        context["heiglogo_left"] = config.left
+        context["heiglogo_top"] = config.top
 
     def should_render(self, config: HeigLogoConfig) -> bool:
         _ = config
