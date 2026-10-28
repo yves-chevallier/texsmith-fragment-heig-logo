@@ -67,6 +67,19 @@ class TestBuildConfig:
         with pytest.raises(ValueError, match="Unknown heiglogo year"):
             frag.build_config({"heiglogo_year": "1995"})
 
+    def test_default_offsets(self, frag: HeigLogoFragment) -> None:
+        config = frag.build_config({})
+        assert (config.left, config.top) == ("1cm", "1cm")
+
+    def test_explicit_offsets(self, frag: HeigLogoFragment) -> None:
+        config = frag.build_config({"heiglogo_left": "17mm", "heiglogo_top": " 0.8cm "})
+        assert (config.left, config.top) == ("17mm", "0.8cm")
+
+    @pytest.mark.parametrize("raw", ["17", "mm", "1cm}", r"1cm\relax", "large"])
+    def test_invalid_offset_raises(self, frag: HeigLogoFragment, raw: str) -> None:
+        with pytest.raises(ValueError, match="Invalid heiglogo left"):
+            frag.build_config({"heiglogo_left": raw})
+
 
 class TestInject:
     def test_inject_sets_context(self, frag: HeigLogoFragment) -> None:
@@ -74,6 +87,8 @@ class TestInject:
         render_context(frag, context)
         assert context["heiglogo_year"] == "2004"
         assert context["heiglogo_color"] is False
+        assert context["heiglogo_left"] == "1cm"
+        assert context["heiglogo_top"] == "1cm"
 
     def test_should_render_always_true(self, frag: HeigLogoFragment) -> None:
         assert frag.should_render(HeigLogoConfig(color=False, year="2020")) is True
@@ -99,6 +114,14 @@ class TestDeclaration:
             "heiglogo.color",
             "heiglogo_color",
         ]
+        assert fragment.attributes["heiglogo_left"].sources == [
+            "heiglogo.left",
+            "heiglogo_left",
+        ]
+        assert fragment.attributes["heiglogo_top"].sources == [
+            "heiglogo.top",
+            "heiglogo_top",
+        ]
 
     def test_fragment_path_points_to_dir(self) -> None:
         assert FRAGMENT_PATH.is_dir()
@@ -110,6 +133,7 @@ class TestTemplateRendering:
 
     @staticmethod
     def _render(**context: object) -> str:
+        context = {"heiglogo_left": "1cm", "heiglogo_top": "1cm", **context}
         env = jinja2.Environment(
             block_start_string=r"\BLOCK{",
             block_end_string="}",
@@ -134,11 +158,22 @@ class TestTemplateRendering:
         assert "year=2020" in out
         assert "color=true" in out
 
+    def test_offsets_are_emitted(self) -> None:
+        out = self._render(
+            heiglogo_year="2020", heiglogo_color=False, heiglogo_left="17mm"
+        )
+        assert "left=17mm,top=1cm" in out
+
     def test_full_pipeline_then_render(self) -> None:
-        context: dict = {"date": "2009-06-01", "heiglogo_color": "true"}
+        context: dict = {
+            "date": "2009-06-01",
+            "heiglogo_color": "true",
+            "heiglogo_left": "17mm",
+        }
         fragment.render_context(context)
         out = self._render(**context)
         assert "year=2009" in out
+        assert "left=17mm" in out
         assert "color=true" in out
 
 
@@ -192,14 +227,24 @@ class TestRegistry:
 
         FRAGMENT_REGISTRY.resolve("heiglogo")
         attributes = FRAGMENT_REGISTRY.attributes_for("heiglogo")
-        assert set(attributes) == {"heiglogo_color", "heiglogo_year"}
+        assert set(attributes) == {
+            "heiglogo_color",
+            "heiglogo_year",
+            "heiglogo_left",
+            "heiglogo_top",
+        }
         assert {spec.owner for spec in attributes.values()} == {"heiglogo"}
 
     def test_attribute_defaults_are_collected(self) -> None:
         from texsmith.core.fragments import collect_fragment_attribute_defaults
 
         defaults = collect_fragment_attribute_defaults(["heiglogo"])
-        assert defaults == {"heiglogo_color": False, "heiglogo_year": "auto"}
+        assert defaults == {
+            "heiglogo_color": False,
+            "heiglogo_year": "auto",
+            "heiglogo_left": "1cm",
+            "heiglogo_top": "1cm",
+        }
 
 
 class TestRenderFragments:
@@ -244,6 +289,20 @@ class TestRenderFragments:
         inline = result.variable_injections["extra_packages"][1]
         assert "year=1998" in inline
         assert "color=true" in inline
+
+    def test_attribute_override_moves_the_logo(self, tmp_path: Path) -> None:
+        from texsmith.core.fragments import render_fragments
+
+        result = render_fragments(
+            ["heiglogo"],
+            context={"date": "2026-01-01"},
+            output_dir=tmp_path,
+            overrides={"heiglogo": {"left": "17mm", "top": "12mm"}},
+            declared_variables={"extra_packages"},
+            template_name="article",
+        )
+        inline = result.variable_injections["extra_packages"][1]
+        assert "left=17mm,top=12mm" in inline
 
     def test_auto_vintage_from_the_document_date(self, tmp_path: Path) -> None:
         _, payload = self._render(tmp_path, date="2006-09-01")

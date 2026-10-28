@@ -29,12 +29,15 @@ press:
 heiglogo:
   color: false   # set to true for the red HEIG-VD logo
   year: auto     # auto | 1998 | 2004 | 2009 | 2020
+  left: 1cm      # distance from the left edge of the sheet
+  top: 1cm       # distance from the top edge of the sheet
 ```
 
 (The legacy top-level `fragments:` key is still honoured by TeXSmith 0.8.)
 
-The logo is positioned 1 cm from the top-left of the page on every page of
-the document.
+The logo is positioned 1 cm from the top-left of the page by default; `left`
+and `top` move it, for instance `left: 17mm` to leave room for a binding
+gutter.
 
 ### Logo vintages
 
@@ -69,6 +72,8 @@ ways:
 |------------------|----------|----------------------------------------|
 | `heiglogo.color` | `false`  | Render the logo in HEIG-VD red (`e1251b`) instead of black. |
 | `heiglogo.year`  | `auto`   | Logo vintage: `auto` (from the document `date`), or one of `1998`, `2004`, `2009`, `2020`. |
+| `heiglogo.left`  | `1cm`    | Distance from the left edge of the sheet, as a TeX length (`17mm`, `0.8cm`, …). |
+| `heiglogo.top`   | `1cm`    | Distance from the top edge of the sheet, as a TeX length. |
 
 ### Demo
 
@@ -97,7 +102,7 @@ The package ships these files under
 
 - `heiglogo.sty` — the docstrip-generated LaTeX package (now multi-vintage).
 - `heiglogo.jinja.tex` — a one-line Jinja template that calls
-  `\AddToShipoutPictureBG*{\logo[..., year=NNNN]}`.
+  `\AddToShipoutPictureBG*{\logo[left=…, top=…, year=NNNN]}`.
 - `fragment.toml` — the manifest TeXSmith reads when the fragment is
   resolved *by path*; it names the same `entrypoint` as the
   `texsmith.fragments` entry point, so both routes yield the same object.
