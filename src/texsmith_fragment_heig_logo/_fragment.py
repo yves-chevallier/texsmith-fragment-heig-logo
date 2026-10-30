@@ -49,10 +49,6 @@ _TYPST_UNITS: dict[str, tuple[float, str]] = {
     "sp": (_TEX_POINT_MM / 65536, "mm"),
 }
 
-# TeXSmith renders the Typst pieces of a fragment from the release that adds
-# ``FragmentPiece.backend``; an older one would take them for LaTeX pieces.
-_TYPST_FRAGMENTS = "backend" in FragmentPiece.__dataclass_fields__
-
 
 def _coerce_bool(value: Any, *, default: bool = False) -> bool:
     """Interpret a front-matter value as a boolean, tolerating strings.
@@ -134,22 +130,19 @@ class HeigLogoFragment(BaseFragment[HeigLogoConfig]):
             # region a document is assigned to, a variable an injection point.
             variable="extra_packages",
         ),
+        FragmentPiece(
+            template_path=FRAGMENT_PATH / "heiglogo.typ",
+            kind="package",
+            output_name="heiglogo",
+            backend="typst",
+        ),
+        FragmentPiece(
+            template_path=FRAGMENT_PATH / "heiglogo.jinja.typ",
+            kind="inline",
+            variable="extra_packages",
+            backend="typst",
+        ),
     ]
-    if _TYPST_FRAGMENTS:
-        pieces += [
-            FragmentPiece(
-                template_path=FRAGMENT_PATH / "heiglogo.typ",
-                kind="package",
-                output_name="heiglogo",
-                backend="typst",
-            ),
-            FragmentPiece(
-                template_path=FRAGMENT_PATH / "heiglogo.jinja.typ",
-                kind="inline",
-                variable="extra_packages",
-                backend="typst",
-            ),
-        ]
     attributes: ClassVar[dict[str, TemplateAttributeSpec]] = {
         "heiglogo_color": TemplateAttributeSpec(
             default=False,

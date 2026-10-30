@@ -7,7 +7,6 @@ from pathlib import Path
 
 import jinja2
 import pytest
-from texsmith.core.fragments.base import FragmentPiece
 
 from texsmith_fragment_heig_logo import (
     FRAGMENT_PATH,
@@ -16,9 +15,6 @@ from texsmith_fragment_heig_logo import (
     fragment,
 )
 from texsmith_fragment_heig_logo._fragment import typst_length
-
-# The TeXSmith releases that render a fragment's Typst pieces.
-TYPST = "backend" in FragmentPiece.__dataclass_fields__
 
 
 @pytest.fixture
@@ -135,10 +131,9 @@ class TestInject:
 class TestDeclaration:
     def test_name_and_pieces(self) -> None:
         assert fragment.name == "heiglogo"
-        latex = [p for p in fragment.pieces if getattr(p, "backend", "latex") == "latex"]
+        latex = [p for p in fragment.pieces if p.backend == "latex"]
         assert [p.kind for p in latex] == ["package", "inline"]
 
-    @pytest.mark.skipif(not TYPST, reason="TeXSmith renders no Typst pieces")
     def test_typst_pieces(self) -> None:
         typst = [p for p in fragment.pieces if p.backend == "typst"]
         assert [(p.kind, p.template_path.name) for p in typst] == [
@@ -146,10 +141,6 @@ class TestDeclaration:
             ("inline", "heiglogo.jinja.typ"),
         ]
         assert typst[0].output_filename("heiglogo") == "heiglogo.typ"
-
-    @pytest.mark.skipif(TYPST, reason="TeXSmith renders Typst pieces")
-    def test_no_typst_pieces_for_an_older_texsmith(self) -> None:
-        assert len(fragment.pieces) == 2
 
     def test_piece_files_exist(self) -> None:
         for piece in fragment.pieces:

@@ -34,7 +34,7 @@ heiglogo:
   group: iict    # optional: institute or centre logo (bar and text)
 ```
 
-(The legacy top-level `fragments:` key is still honoured by TeXSmith 0.8.)
+(The legacy top-level `fragments:` key is still honoured.)
 
 The logo is positioned 1 cm from the top-left of the page by default; `left`
 and `top` move it, for instance `left: 17mm` to leave room for a binding
@@ -133,9 +133,8 @@ texsmith rapport.md -t article --format typst -o build --build
 
 The fragment's Typst pieces write `heiglogo.typ` next to the `.typ` and put
 the logo in the first page's background; the content is moved below the logo
-when the template would start it underneath. This needs a TeXSmith release
-whose fragments carry Typst pieces (`FragmentPiece.backend`, after 0.9.3); an
-older TeXSmith renders the LaTeX output only.
+when the template would start it underneath. TeXSmith renders a fragment's
+Typst pieces since 0.9.4.
 
 `heiglogo.typ` is a Typst port of `heiglogo.sty`: the outlines of the four
 vintages are translated from the package's TikZ paths by
@@ -159,7 +158,7 @@ Typst warns once per missing family of the font fallback list (`Arial`,
 
 ## Requirements
 
-- TeXSmith ≥ 0.8, < 1.0
+- TeXSmith ≥ 0.9.4, < 1.0
 - A LaTeX engine with `xelatex` or `lualatex` (the bundled `heiglogo.sty`
   uses `fontspec` and refuses `pdflatex`).
 - The `TeX Gyre Heros` font family (already present in standard TeX Live
