@@ -12,7 +12,7 @@ requires-python = ">=3.10"
 authors = [
     { name = "Yves Chevallier", email = "yves.chevalier@heig-vd.ch" }
 ]
-keywords = ["texsmith", "fragment", "heig-vd", "latex"]
+keywords = ["texsmith", "fragment", "heig-vd", "latex", "typst"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
@@ -27,9 +27,9 @@ classifiers = [
 dependencies = [
     # Object-oriented fragments (BaseFragment) and entry points returning a
     # fragment object — required for the date-driven vintage selection.
-    # 0.8 renamed ``FragmentPiece.slot`` to ``variable`` and passes ``emitter``
-    # to ``build_config``/``inject``, so 0.8 is the floor.
-    "texsmith>=0.8,<1.0",
+    # 0.9.4 renders a fragment's Typst pieces (``FragmentPiece.backend``), which
+    # the logo needs to appear in a Typst render, so 0.9.4 is the floor.
+    "texsmith>=0.9.4,<1.0",
 ]
 
 [dependency-groups]
@@ -60,6 +60,8 @@ packages = ["src/texsmith_fragment_heig_logo"]
 "src/texsmith_fragment_heig_logo/fragment/heiglogo.sty" = "texsmith_fragment_heig_logo/fragment/heiglogo.sty"
 "src/texsmith_fragment_heig_logo/fragment/fragment.toml" = "texsmith_fragment_heig_logo/fragment/fragment.toml"
 "src/texsmith_fragment_heig_logo/fragment/heiglogo.jinja.tex" = "texsmith_fragment_heig_logo/fragment/heiglogo.jinja.tex"
+"src/texsmith_fragment_heig_logo/fragment/heiglogo.typ" = "texsmith_fragment_heig_logo/fragment/heiglogo.typ"
+"src/texsmith_fragment_heig_logo/fragment/heiglogo.jinja.typ" = "texsmith_fragment_heig_logo/fragment/heiglogo.jinja.typ"
 
 [tool.hatch.build.targets.sdist]
 include = [

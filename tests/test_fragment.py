@@ -14,6 +14,7 @@ from texsmith_fragment_heig_logo import (
     HeigLogoFragment,
     fragment,
 )
+from texsmith_fragment_heig_logo._fragment import typst_length
 
 
 @pytest.fixture
@@ -81,6 +82,39 @@ class TestBuildConfig:
             frag.build_config({"heiglogo_left": raw})
 
 
+class TestGroup:
+    def test_no_group_by_default(self, frag: HeigLogoFragment) -> None:
+        assert frag.build_config({}).group is None
+
+    def test_group_is_resolved(self, frag: HeigLogoFragment) -> None:
+        config = frag.build_config({"heiglogo_group": "IICT"})
+        assert config.group is not None
+        assert config.group.key == "iict"
+
+    def test_unknown_group_raises(self, frag: HeigLogoFragment) -> None:
+        with pytest.raises(ValueError, match="Unknown heiglogo group"):
+            frag.build_config({"heiglogo_group": "heig"})
+
+    def test_inject_institute_texts(self, frag: HeigLogoFragment) -> None:
+        context: dict = {"heiglogo_group": "ie"}
+        render_context(frag, context)
+        assert context["heiglogo_group"] == "ie"
+        assert context["heiglogo_title"] == "IE"
+        assert context["heiglogo_subtitle"] == r"Institut\\des Énergies"
+
+    def test_inject_centre_texts(self, frag: HeigLogoFragment) -> None:
+        context: dict = {"heiglogo_group": "rad"}
+        render_context(frag, context)
+        assert context["heiglogo_title"] == r"Centre\\Ra\&D"
+        assert context["heiglogo_subtitle"] == ""
+
+    def test_inject_without_group(self, frag: HeigLogoFragment) -> None:
+        context: dict = {}
+        render_context(frag, context)
+        assert context["heiglogo_title"] == ""
+        assert context["heiglogo_subtitle"] == ""
+
+
 class TestInject:
     def test_inject_sets_context(self, frag: HeigLogoFragment) -> None:
         context: dict = {"heiglogo_year": "auto", "date": "2007-01-01"}
@@ -97,9 +131,16 @@ class TestInject:
 class TestDeclaration:
     def test_name_and_pieces(self) -> None:
         assert fragment.name == "heiglogo"
-        assert len(fragment.pieces) == 2
-        kinds = {piece.kind for piece in fragment.pieces}
-        assert kinds == {"package", "inline"}
+        latex = [p for p in fragment.pieces if p.backend == "latex"]
+        assert [p.kind for p in latex] == ["package", "inline"]
+
+    def test_typst_pieces(self) -> None:
+        typst = [p for p in fragment.pieces if p.backend == "typst"]
+        assert [(p.kind, p.template_path.name) for p in typst] == [
+            ("package", "heiglogo.typ"),
+            ("inline", "heiglogo.jinja.typ"),
+        ]
+        assert typst[0].output_filename("heiglogo") == "heiglogo.typ"
 
     def test_piece_files_exist(self) -> None:
         for piece in fragment.pieces:
@@ -177,6 +218,87 @@ class TestTemplateRendering:
         assert "color=true" in out
 
 
+    def test_group_draws_bar_and_text(self) -> None:
+        context: dict = {"heiglogo_group": "iict", "heiglogo_color": True}
+        fragment.render_context(context)
+        out = self._render(**context)
+        assert (
+            r"color=true,textwidth=6cm]{\heiglogoGroupTitle}"
+            r"{Institut des\\Technologies de\\l’information et de\\la communication}%"
+        ) in out
+        assert r"\protected\def\heiglogoGroupTitle{IICT}" in out
+        assert r"\newfontfamily\heiglogoFont{Arial}" in out
+
+    def test_centre_has_no_subtitle(self) -> None:
+        context: dict = {"heiglogo_group": "formation-continue"}
+        fragment.render_context(context)
+        out = self._render(**context)
+        assert r"\protected\def\heiglogoGroupTitle{Centre\\Formation\\continue}" in out
+        assert r"textwidth=6cm]{\heiglogoGroupTitle}%" in out
+
+    def test_no_group_keeps_the_plain_logo(self) -> None:
+        context: dict = {}
+        fragment.render_context(context)
+        out = self._render(**context)
+        assert r"\logo[left=1cm,top=1cm,year=2020]%" in out
+        assert "heiglogoFont" not in out
+
+
+class TestTypstRendering:
+    """Render the Typst pieces with the standard Jinja delimiters."""
+
+    @staticmethod
+    def _env() -> jinja2.Environment:
+        return jinja2.Environment(
+            loader=jinja2.FileSystemLoader(str(FRAGMENT_PATH)),
+            trim_blocks=True,
+            lstrip_blocks=True,
+            keep_trailing_newline=True,
+        )
+
+    def _render(self, context: dict) -> str:
+        fragment.render_context(context)
+        return self._env().get_template("heiglogo.jinja.typ").render(**context)
+
+    def test_plain_logo(self) -> None:
+        out = self._render({"date": "2006-05-01"})
+        assert (
+            '#set page(background: heiglogo-page(left: 1cm, top: 1cm, year: "2004"))' in out
+        )
+        assert '#heiglogo-clearance(top: 1cm, year: "2004")' in out
+
+    def test_group_and_offsets(self) -> None:
+        out = self._render(
+            {"heiglogo_group": "REDS", "heiglogo_color": True, "heiglogo_left": "17mm"}
+        )
+        assert (
+            'heiglogo-page(left: 17mm, top: 1cm, year: "2020", color: true, group: "reds")'
+            in out
+        )
+
+    def test_module_is_untouched_by_jinja(self) -> None:
+        # TeXSmith renders the package piece through Jinja too.
+        source = (FRAGMENT_PATH / "heiglogo.typ").read_text(encoding="utf-8")
+        assert self._env().get_template("heiglogo.typ").render() == source
+
+
+@pytest.mark.parametrize(
+    ("tex", "typst"),
+    [
+        ("1cm", "1cm"),
+        ("17mm", "17mm"),
+        ("0.5in", "0.5in"),
+        ("-2em", "-2em"),
+        ("2ex", "1em"),
+        ("72bp", "72pt"),
+        ("72.27pt", "25.4mm"),
+        ("1pc", "4.2175mm"),
+    ],
+)
+def test_typst_length(tex: str, typst: str) -> None:
+    assert typst_length(tex) == typst
+
+
 class TestApiSurface:
     """The bits of the 0.8 ``BaseFragment`` contract this fragment relies on."""
 
@@ -232,6 +354,7 @@ class TestRegistry:
             "heiglogo_year",
             "heiglogo_left",
             "heiglogo_top",
+            "heiglogo_group",
         }
         assert {spec.owner for spec in attributes.values()} == {"heiglogo"}
 
@@ -244,6 +367,7 @@ class TestRegistry:
             "heiglogo_year": "auto",
             "heiglogo_left": "1cm",
             "heiglogo_top": "1cm",
+            "heiglogo_group": None,
         }
 
 
