@@ -1,4 +1,22 @@
 \usepackage{eso-pic}
+\BLOCK{ if heiglogo_title }
+% The charter sets the institute and centre names in Circular, which is not
+% freely available: use Arial, else a metric-compatible clone, else heiglogo's
+% own TeX Gyre Heros.
+\makeatletter
+\AtBeginDocument{%
+  \IfFontExistsTF{Arial}{\newfontfamily\heiglogoFont{Arial}}{%
+    \IfFontExistsTF{Arimo}{\newfontfamily\heiglogoFont{Arimo}}{%
+      \IfFontExistsTF{Liberation Sans}{\newfontfamily\heiglogoFont{Liberation Sans}}{%
+        \newfontfamily\heiglogoFont{TeX Gyre Heros}}}}%
+  \heiglogo@fontloadedtrue
+}
+\makeatother
+% heiglogo sets its title through \MakeUppercase; a protected macro is not
+% expanded there, so a centre keeps its case (\NoCaseChange would need a newer
+% kernel than Tectonic's).
+\protected\def\heiglogoGroupTitle{\VAR{ heiglogo_title }}
+\BLOCK{ endif }
 \AddToShipoutPictureBG*{%
-  \logo[left=\VAR{ heiglogo_left },top=\VAR{ heiglogo_top },year=\VAR{ heiglogo_year }\BLOCK{ if heiglogo_color },color=true\BLOCK{ endif }]%
+  \logo[left=\VAR{ heiglogo_left },top=\VAR{ heiglogo_top },year=\VAR{ heiglogo_year }\BLOCK{ if heiglogo_color },color=true\BLOCK{ endif }\BLOCK{ if heiglogo_title },textwidth=6cm]{\heiglogoGroupTitle}\BLOCK{ if heiglogo_subtitle }{\VAR{ heiglogo_subtitle }}\BLOCK{ endif }\BLOCK{ else }]\BLOCK{ endif }%
 }

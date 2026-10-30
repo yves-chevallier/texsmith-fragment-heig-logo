@@ -31,6 +31,7 @@ heiglogo:
   year: auto     # auto | 1998 | 2004 | 2009 | 2020
   left: 1cm      # distance from the left edge of the sheet
   top: 1cm       # distance from the top edge of the sheet
+  group: iict    # optional: institute or centre logo (bar and text)
 ```
 
 (The legacy top-level `fragments:` key is still honoured by TeXSmith 0.8.)
@@ -66,6 +67,39 @@ ways:
 
   When no usable date is available, the current logo (`2020`) is used.
 
+### Institute and centre logos
+
+Set `heiglogo.group` to draw the full logo of one of the twelve institutes and
+centres of the 2020 graphic charter (*Logothèque*): the mark, a vertical bar
+and the group's name. Without it, the logo is drawn without text.
+
+```yaml
+heiglogo:
+  color: true
+  group: reds
+```
+
+| `group`                     | Text                                                       |
+|-----------------------------|------------------------------------------------------------|
+| `comatec`                   | **COMATEC** Institut de Conception mécanique et Technologies des matériaux |
+| `iai`                       | **IAI** Institut d’Automatisation industrielle             |
+| `ie`                        | **IE** Institut des Énergies                               |
+| `iict`                      | **IICT** Institut des Technologies de l’information et de la communication |
+| `iide`                      | **IIDE** Institut interdisciplinaire du Développement de l’entreprise |
+| `insit`                     | **INSIT** Institut d’Ingénierie du territoire              |
+| `mei`                       | **MEI** Media Engineering Institute                        |
+| `reds`                      | **REDS** Institut Reconfigurable and Embedded Digital Systems |
+| `formation-continue`        | **Centre Formation continue**                              |
+| `formation-base`            | **Centre Formation de base**                               |
+| `rad`                       | **Centre Ra&D**                                            |
+| `relations-internationales` | **Centre Relations internationales**                       |
+
+As in the charter, an institute shows its acronym in bold at the top and its
+name flush with the bottom of the mark; a centre shows its whole name in bold.
+The line breaks are the charter's. The charter's typeface, Circular, is not
+freely available, so the text is set in **Arial**, falling back to its metric
+clones Arimo or Liberation Sans, then to TeX Gyre Heros.
+
 ### Attributes
 
 | Attribute        | Default  | Description                            |
@@ -74,6 +108,7 @@ ways:
 | `heiglogo.year`  | `auto`   | Logo vintage: `auto` (from the document `date`), or one of `1998`, `2004`, `2009`, `2020`. |
 | `heiglogo.left`  | `1cm`    | Distance from the left edge of the sheet, as a TeX length (`17mm`, `0.8cm`, …). |
 | `heiglogo.top`   | `1cm`    | Distance from the top edge of the sheet, as a TeX length. |
+| `heiglogo.group` | —        | Institute or centre whose full logo (bar and text) is drawn, see above. Case-insensitive; `_` and spaces stand for `-`. |
 
 ### Demo
 
@@ -87,13 +122,49 @@ NO_BUILD=1 ./demo/demo.sh   # LaTeX only, no PDF
 
 Output (one folder per scenario) lands under `demo/output/`.
 
+## Typst
+
+The same front matter places the logo in a Typst render (`--format typst`),
+with the same options — `color`, `year`, `left`, `top` and `group`:
+
+```bash
+texsmith rapport.md -t article --format typst -o build --build
+```
+
+The fragment's Typst pieces write `heiglogo.typ` next to the `.typ` and put
+the logo in the first page's background; the content is moved below the logo
+when the template would start it underneath. This needs a TeXSmith release
+whose fragments carry Typst pieces (`FragmentPiece.backend`, after 0.9.3); an
+older TeXSmith renders the LaTeX output only.
+
+`heiglogo.typ` is a Typst port of `heiglogo.sty`: the outlines of the four
+vintages are translated from the package's TikZ paths by
+`scripts/generate_typst_outlines.py` (rerun it after refreshing the `.sty`; a
+test fails when they drift), with the same geometry and text metrics. It can
+also be imported by hand:
+
+```typst
+#import "heiglogo.typ": heiglogo, heiglogo-page
+
+// First page only, 1 cm from the top-left corner (left/top adjustable).
+#set page(background: heiglogo-page(group: "iict", color: true))
+
+// Or inline, anywhere.
+#heiglogo(year: "2009", height: 18mm)
+#heiglogo(group: "rad")
+```
+
+Typst warns once per missing family of the font fallback list (`Arial`,
+`Arimo`, `Liberation Sans`, `TeX Gyre Heros`); the first one installed is used.
+
 ## Requirements
 
 - TeXSmith ≥ 0.8, < 1.0
 - A LaTeX engine with `xelatex` or `lualatex` (the bundled `heiglogo.sty`
   uses `fontspec` and refuses `pdflatex`).
 - The `TeX Gyre Heros` font family (already present in standard TeX Live
-  distributions).
+  distributions); for `heiglogo.group`, preferably Arial (or Arimo /
+  Liberation Sans).
 
 ## How it works
 
@@ -101,8 +172,14 @@ The package ships these files under
 `src/texsmith_fragment_heig_logo/fragment/`:
 
 - `heiglogo.sty` — the docstrip-generated LaTeX package (now multi-vintage).
-- `heiglogo.jinja.tex` — a one-line Jinja template that calls
-  `\AddToShipoutPictureBG*{\logo[left=…, top=…, year=NNNN]}`.
+- `heiglogo.jinja.tex` — a short Jinja template that calls
+  `\AddToShipoutPictureBG*{\logo[left=…, top=…, year=NNNN]}`, adding the
+  group's title and subtitle arguments (and the Arial font) when
+  `heiglogo.group` is set.
+- `heiglogo.typ` — the Typst port of the logos and the groups, written next
+  to the `.typ` by a Typst render.
+- `heiglogo.jinja.typ` — the Typst counterpart of `heiglogo.jinja.tex`: the
+  `#set page(background: heiglogo-page(…))` call.
 - `fragment.toml` — the manifest TeXSmith reads when the fragment is
   resolved *by path*; it names the same `entrypoint` as the
   `texsmith.fragments` entry point, so both routes yield the same object.
@@ -149,7 +226,9 @@ vendored commit's date and short hash, e.g.:
 \providecommand\HeigGitTag{34e9c6e}
 ```
 
-Bump the package version and commit.
+Regenerate the Typst outlines from the new drawings with
+`python scripts/generate_typst_outlines.py`, then bump the package version and
+commit.
 
 ## Licence
 

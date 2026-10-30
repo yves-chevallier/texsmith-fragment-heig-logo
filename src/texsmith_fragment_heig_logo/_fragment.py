@@ -19,17 +19,39 @@ from texsmith.core.fragments.base import BaseFragment, FragmentPiece
 from texsmith.core.templates.manifest import TemplateAttributeSpec
 from texsmith.diagnostics import DiagnosticEmitter
 
+from ._groups import GROUPS, Group, latex_text, resolve_group
 from ._vintage import LATEST_VINTAGE, VINTAGES, resolve_vintage
 
 FRAGMENT_PATH: Path = Path(__file__).resolve().parent / "fragment"
 
-__all__ = ["HeigLogoConfig", "HeigLogoFragment"]
+__all__ = ["HeigLogoConfig", "HeigLogoFragment", "typst_length"]
 
 DEFAULT_OFFSET = "1cm"
 
 # The offsets are written verbatim into the LaTeX source: only a plain TeX
 # length (a number and a unit) gets through.
 _LENGTH = re.compile(r"-?(\d+(\.\d*)?|\.\d+)\s*(pt|mm|cm|in|bp|pc|dd|cc|sp|em|ex)")
+
+# Typst shares mm, cm, in and em with TeX; its pt is TeX's bp. The other TeX
+# units are written in millimetres, and ex as half an em.
+_TEX_POINT_MM = 25.4 / 72.27
+_TYPST_UNITS: dict[str, tuple[float, str]] = {
+    "mm": (1, "mm"),
+    "cm": (1, "cm"),
+    "in": (1, "in"),
+    "em": (1, "em"),
+    "ex": (0.5, "em"),
+    "bp": (1, "pt"),
+    "pt": (_TEX_POINT_MM, "mm"),
+    "pc": (12 * _TEX_POINT_MM, "mm"),
+    "dd": (1238 / 1157 * _TEX_POINT_MM, "mm"),
+    "cc": (12 * 1238 / 1157 * _TEX_POINT_MM, "mm"),
+    "sp": (_TEX_POINT_MM / 65536, "mm"),
+}
+
+# TeXSmith renders the Typst pieces of a fragment from the release that adds
+# ``FragmentPiece.backend``; an older one would take them for LaTeX pieces.
+_TYPST_FRAGMENTS = "backend" in FragmentPiece.__dataclass_fields__
 
 
 def _coerce_bool(value: Any, *, default: bool = False) -> bool:
@@ -55,10 +77,19 @@ def _coerce_length(value: Any, *, name: str) -> str:
     return length
 
 
+def typst_length(length: str) -> str:
+    """Return the TeX ``length`` (validated by :func:`_coerce_length`) in Typst."""
+    match = _LENGTH.fullmatch(length)
+    assert match is not None
+    factor, unit = _TYPST_UNITS[match.group(3)]
+    value = float(length[: match.start(3)]) * factor
+    return f"{round(value, 4):g}{unit}"
+
+
 class HeigLogoConfig:
     """Resolved fragment options handed to the Jinja template."""
 
-    __slots__ = ("color", "left", "top", "year")
+    __slots__ = ("color", "group", "left", "top", "year")
 
     def __init__(
         self,
@@ -67,16 +98,18 @@ class HeigLogoConfig:
         year: str,
         left: str = DEFAULT_OFFSET,
         top: str = DEFAULT_OFFSET,
+        group: Group | None = None,
     ) -> None:
         self.color = color
         self.year = year
         self.left = left
         self.top = top
+        self.group = group
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return (
             f"HeigLogoConfig(color={self.color!r}, year={self.year!r}, "
-            f"left={self.left!r}, top={self.top!r})"
+            f"left={self.left!r}, top={self.top!r}, group={self.group!r})"
         )
 
 
@@ -102,6 +135,21 @@ class HeigLogoFragment(BaseFragment[HeigLogoConfig]):
             variable="extra_packages",
         ),
     ]
+    if _TYPST_FRAGMENTS:
+        pieces += [
+            FragmentPiece(
+                template_path=FRAGMENT_PATH / "heiglogo.typ",
+                kind="package",
+                output_name="heiglogo",
+                backend="typst",
+            ),
+            FragmentPiece(
+                template_path=FRAGMENT_PATH / "heiglogo.jinja.typ",
+                kind="inline",
+                variable="extra_packages",
+                backend="typst",
+            ),
+        ]
     attributes: ClassVar[dict[str, TemplateAttributeSpec]] = {
         "heiglogo_color": TemplateAttributeSpec(
             default=False,
@@ -133,6 +181,15 @@ class HeigLogoFragment(BaseFragment[HeigLogoConfig]):
             sources=["heiglogo.top", "heiglogo_top"],
             description="Distance du logo au bord supérieur de la feuille.",
         ),
+        "heiglogo_group": TemplateAttributeSpec(
+            default=None,
+            sources=["heiglogo.group", "heiglogo_group"],
+            description=(
+                "Institut ou centre dont le logo complet (barre et texte) est "
+                "dessiné : " + ", ".join(GROUPS) + ". Sans valeur, le logo est "
+                "dessiné sans texte."
+            ),
+        ),
     }
     config_cls: ClassVar[type[HeigLogoConfig]] = HeigLogoConfig
     source: ClassVar[Path] = FRAGMENT_PATH
@@ -141,6 +198,9 @@ class HeigLogoFragment(BaseFragment[HeigLogoConfig]):
         "heiglogo_year": LATEST_VINTAGE,
         "heiglogo_left": DEFAULT_OFFSET,
         "heiglogo_top": DEFAULT_OFFSET,
+        "heiglogo_group": "",
+        "heiglogo_title": "",
+        "heiglogo_subtitle": "",
     }
 
     def build_config(
@@ -156,7 +216,8 @@ class HeigLogoFragment(BaseFragment[HeigLogoConfig]):
         vintage = resolve_vintage(context.get("heiglogo_year"), context.get("date"))
         left = _coerce_length(context.get("heiglogo_left"), name="left")
         top = _coerce_length(context.get("heiglogo_top"), name="top")
-        return HeigLogoConfig(color=color, year=vintage, left=left, top=top)
+        group = resolve_group(context.get("heiglogo_group"))
+        return HeigLogoConfig(color=color, year=vintage, left=left, top=top, group=group)
 
     def inject(
         self,
@@ -172,6 +233,12 @@ class HeigLogoFragment(BaseFragment[HeigLogoConfig]):
         context["heiglogo_year"] = config.year
         context["heiglogo_left"] = config.left
         context["heiglogo_top"] = config.top
+        context["heiglogo_typst_left"] = typst_length(config.left)
+        context["heiglogo_typst_top"] = typst_length(config.top)
+        group = config.group
+        context["heiglogo_group"] = group.key if group else ""
+        context["heiglogo_title"] = latex_text(group.title) if group else ""
+        context["heiglogo_subtitle"] = latex_text(group.subtitle) if group else ""
 
     def should_render(self, config: HeigLogoConfig) -> bool:
         _ = config
